@@ -9,4 +9,4 @@ clean:
 fmt:
 	goimports -w .
 
-PHONY: all clean fmt
+.PHONY: all clean fmt depositum

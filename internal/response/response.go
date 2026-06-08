@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	v1 "github.com/redish101/depositum/pkg/api/v1"
 )
 
 func WriteWithStatus(c echo.Context, status int, data any) error {
@@ -14,12 +15,8 @@ func Write(c echo.Context, data any) error {
 	return WriteWithStatus(c, http.StatusOK, data)
 }
 
-type ErrorResponse struct {
-	Error string `json:"error"`
-}
-
 func WriteError(c echo.Context, status int, err error) error {
-	resp := ErrorResponse{Error: err.Error()}
+	resp := v1.ErrorResponse{Error: err.Error()}
 
 	return c.JSON(status, resp)
 }

@@ -43,16 +43,20 @@ func getEnv[T comparable](key string, defaultValue T) T {
 	return result
 }
 
-var (
+type Config struct {
 	Debug bool
 	Host  string
 	Port  string
-)
+}
 
-func Init() {
+func FromEnv() *Config {
 	godotenv.Load()
 
-	Debug = getEnv("DEBUG", false)
-	Host = getEnv("HOST", "localhost")
-	Port = getEnv("PORT", "3000")
+	cfg := &Config{
+		Debug: getEnv("DEBUG", false),
+		Host:  getEnv("HOST", "localhost"),
+		Port:  getEnv("PORT", "3000"),
+	}
+
+	return cfg
 }

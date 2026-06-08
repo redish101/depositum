@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/redish101/depositum/server/response"
+	"github.com/redish101/depositum/internal/response"
 )
 
 func HTTPErrorHandler(err error, c echo.Context) {
