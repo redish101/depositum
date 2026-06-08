@@ -2,6 +2,7 @@ package application
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/redish101/depositum/internal/config"
@@ -13,6 +14,7 @@ import (
 
 type Application interface {
 	Run() error
+	NewEchoContext(r *http.Request, w http.ResponseWriter) echo.Context
 }
 
 type application struct {
@@ -59,4 +61,8 @@ func (app *application) Run() error {
 	err := app.echo.Start(addr)
 
 	return err
+}
+
+func (app *application) NewEchoContext(r *http.Request, w http.ResponseWriter) echo.Context {
+	return app.echo.NewContext(r, w)
 }

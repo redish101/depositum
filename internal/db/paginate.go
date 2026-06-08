@@ -1,6 +1,8 @@
 package db
 
 import (
+	"context"
+
 	v1 "github.com/redish101/depositum/pkg/api/v1"
 	"gorm.io/gorm"
 )
@@ -21,7 +23,7 @@ func normalize(p *v1.PaginationParams) {
 	}
 }
 
-func PaginateWithQuery[T any](db *gorm.DB, params *v1.PaginationParams, result *[]T, query func(*gorm.DB) *gorm.DB) (*v1.PaginationResponse[T], error) {
+func PaginateWithQuery[T any](ctx context.Context, db *gorm.DB, params *v1.PaginationParams, query func(*gorm.DB) *gorm.DB) (*v1.PaginationResponse[T], error) {
 	normalize(params)
 
 	var total int64
@@ -32,10 +34,12 @@ func PaginateWithQuery[T any](db *gorm.DB, params *v1.PaginationParams, result *
 		return nil, err
 	}
 
+	var result []T
+
 	// 应用查询条件并查询数据
 	offset := (params.Page - 1) * params.PageSize
 	queryDB := query(db)
-	if err := queryDB.Offset(offset).Limit(params.PageSize).Find(result).Error; err != nil {
+	if err := queryDB.Offset(offset).Limit(params.PageSize).Find(&result).Error; err != nil {
 		return nil, err
 	}
 
@@ -43,7 +47,7 @@ func PaginateWithQuery[T any](db *gorm.DB, params *v1.PaginationParams, result *
 	totalPages := int((total + int64(params.PageSize) - 1) / int64(params.PageSize))
 
 	return &v1.PaginationResponse[T]{
-		Data:       *result,
+		Data:       result,
 		Page:       params.Page,
 		PageSize:   params.PageSize,
 		Total:      total,
@@ -51,4 +55,8 @@ func PaginateWithQuery[T any](db *gorm.DB, params *v1.PaginationParams, result *
 		HasNext:    params.Page < totalPages,
 		HasPrev:    params.Page > 1,
 	}, nil
+}
+
+func Paginate[T any](ctx context.Context, db *gorm.DB, params *v1.PaginationParams) (*v1.PaginationResponse[T], error) {
+	return PaginateWithQuery[T](ctx, db, params, func(db *gorm.DB) *gorm.DB { return db })
 }

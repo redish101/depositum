@@ -7,6 +7,10 @@ clean:
 	rm depositum
 
 fmt:
+	go fmt ./...
 	goimports -w .
 
-.PHONY: all clean fmt depositum
+test:
+	go test ./...
+
+.PHONY: all clean fmt depositum test

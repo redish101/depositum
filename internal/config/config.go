@@ -47,6 +47,7 @@ type Config struct {
 	Debug bool
 	Host  string
 	Port  string
+	DSN   string
 }
 
 func FromEnv() *Config {
@@ -56,6 +57,7 @@ func FromEnv() *Config {
 		Debug: getEnv("DEBUG", false),
 		Host:  getEnv("HOST", "localhost"),
 		Port:  getEnv("PORT", "3000"),
+		DSN:   getEnv("DSN", "depositum.db"),
 	}
 
 	return cfg

@@ -7,9 +7,5 @@ import (
 )
 
 func NewDB(cfg *config.Config) (*gorm.DB, error) {
-	if cfg.Debug {
-		return gorm.Open(sqlite.Open("depositum_debug.db"))
-	} else {
-		return gorm.Open(sqlite.Open("depositum.db"))
-	}
+	return gorm.Open(sqlite.Open(cfg.DSN))
 }
