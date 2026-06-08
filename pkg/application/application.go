@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -14,6 +15,7 @@ import (
 
 type Application interface {
 	Run() error
+	Shutdown() error
 	NewEchoContext(r *http.Request, w http.ResponseWriter) echo.Context
 }
 
@@ -61,6 +63,10 @@ func (app *application) Run() error {
 	err := app.echo.Start(addr)
 
 	return err
+}
+
+func (app *application) Shutdown() error {
+	return app.echo.Shutdown(context.Background())
 }
 
 func (app *application) NewEchoContext(r *http.Request, w http.ResponseWriter) echo.Context {

@@ -48,7 +48,7 @@ func TestPaginate(t *testing.T) {
 		PageSize: 3,
 	}
 
-	resp, err := PaginateWithQuery[TestModel](ctx, db, &paginationParams, func(db *gorm.DB) *gorm.DB { return db })
+	resp, err := Paginate[TestModel](ctx, db, &paginationParams)
 	assert.NoError(t, err)
 	require.NotNil(t, resp)
 

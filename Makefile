@@ -13,4 +13,8 @@ fmt:
 test:
 	go test ./...
 
-.PHONY: all clean fmt depositum test
+coverage:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
+
+.PHONY: all clean fmt depositum test coverage
