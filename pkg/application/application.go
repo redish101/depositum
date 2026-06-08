@@ -28,7 +28,7 @@ type application struct {
 }
 
 func New(config *config.Config) (Application, error) {
-	log.Println("Initializing depositum")
+	log.Println("初始化 depositum")
 
 	app := &application{}
 
@@ -54,7 +54,7 @@ func New(config *config.Config) (Application, error) {
 func (app *application) Run() error {
 	addr := app.config.Host + ":" + app.config.Port
 
-	log.Println("Listening on " + addr)
+	log.Println("监听 " + addr)
 
 	err := app.echo.Start(addr)
 
