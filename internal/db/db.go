@@ -13,11 +13,15 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(
+	err = Migrate(db)
+
+	return db, err
+}
+
+func Migrate(db *gorm.DB) error {
+	return db.AutoMigrate(
 		&model.Object{},
 		&model.Library{},
 		&model.Shelf{},
 	)
-
-	return db, err
 }

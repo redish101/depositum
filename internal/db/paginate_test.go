@@ -43,37 +43,41 @@ func TestPaginate(t *testing.T) {
 	createTestData(t, db)
 
 	// 测试正常分页
-	paginationParams := v1.PaginationParams{
-		Page:     2,
-		PageSize: 3,
-	}
+	t.Run("Success", func(t *testing.T) {
+		paginationParams := v1.PaginationParams{
+			Page:     2,
+			PageSize: 3,
+		}
 
-	resp, err := Paginate[TestModel](ctx, db, &paginationParams)
-	assert.NoError(t, err)
-	require.NotNil(t, resp)
+		resp, err := Paginate[TestModel](ctx, db, &paginationParams)
+		assert.NoError(t, err)
+		require.NotNil(t, resp)
 
-	expectedNames := []string{"David", "Eve", "Frank"}
-	actualNames := make([]string, len(resp.Data))
-	for i, model := range resp.Data {
-		actualNames[i] = model.Name
-	}
-	assert.Equal(t, expectedNames, actualNames)
-	assert.Equal(t, 2, resp.Page)
-	assert.Equal(t, 3, resp.PageSize)
-	assert.Equal(t, int64(10), resp.Total)
-	assert.Equal(t, 4, resp.TotalPages)
-	assert.True(t, resp.HasNext)
-	assert.True(t, resp.HasPrev)
+		expectedNames := []string{"David", "Eve", "Frank"}
+		actualNames := make([]string, len(resp.Items))
+		for i, model := range resp.Items {
+			actualNames[i] = model.Name
+		}
+		assert.Equal(t, expectedNames, actualNames)
+		assert.Equal(t, 2, resp.Page)
+		assert.Equal(t, 3, resp.PageSize)
+		assert.Equal(t, int64(10), resp.Total)
+		assert.Equal(t, 4, resp.TotalPages)
+		assert.True(t, resp.HasNext)
+		assert.True(t, resp.HasPrev)
+	})
 
 	// 测试 pageSize 超过最大限制
-	paginationParams = v1.PaginationParams{
-		Page:     1,
-		PageSize: MaximumPageSize + 1,
-	}
+	t.Run("PageSizeExceedsMax", func(t *testing.T) {
+		paginationParams := v1.PaginationParams{
+			Page:     1,
+			PageSize: MaximumPageSize + 1,
+		}
 
-	resp, err = PaginateWithQuery[TestModel](ctx, db, &paginationParams, func(db *gorm.DB) *gorm.DB { return db })
-	assert.NoError(t, err)
-	assert.Equal(t, MaximumPageSize, resp.PageSize)
+		resp, err := PaginateWithQuery[TestModel](ctx, db, &paginationParams, func(db *gorm.DB) *gorm.DB { return db })
+		assert.NoError(t, err)
+		assert.Equal(t, MaximumPageSize, resp.PageSize)
+	})
 }
 
 func TestPaginateWithQuery(t *testing.T) {
@@ -103,8 +107,8 @@ func TestPaginateWithQuery(t *testing.T) {
 
 	assert.NoError(t, err)
 	require.NotNil(t, resp)
-	assert.Equal(t, 1, len(resp.Data))
-	assert.Equal(t, "Alice", resp.Data[0].Name)
+	assert.Equal(t, 1, len(resp.Items))
+	assert.Equal(t, "Alice", resp.Items[0].Name)
 	assert.Equal(t, int64(1), resp.Total)
 	assert.Equal(t, 1, resp.TotalPages)
 	assert.False(t, resp.HasNext)

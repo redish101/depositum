@@ -32,7 +32,7 @@ func getEnv[T comparable](key string, defaultValue T) T {
 		var intValue int
 		_, err := fmt.Sscanf(value, "%d", &intValue)
 		if err != nil {
-			panic(fmt.Sprintf("invalid integer value for %s: %s", key, value))
+			intValue = 0
 		}
 		result = any(intValue).(T)
 

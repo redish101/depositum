@@ -47,7 +47,7 @@ func PaginateWithQuery[T any](ctx context.Context, db *gorm.DB, params *v1.Pagin
 	totalPages := int((total + int64(params.PageSize) - 1) / int64(params.PageSize))
 
 	return &v1.PaginationResponse[T]{
-		Data:       result,
+		Items:      result,
 		Page:       params.Page,
 		PageSize:   params.PageSize,
 		Total:      total,

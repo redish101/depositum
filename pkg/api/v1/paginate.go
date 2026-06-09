@@ -7,7 +7,7 @@ type PaginationParams struct {
 
 // PaginationResponse 分页响应
 type PaginationResponse[T any] struct {
-	Data       []T   `json:"data"`       // 数据列表
+	Items      []T   `json:"items"`      // 数据列表
 	Page       int   `json:"page"`       // 当前页码
 	PageSize   int   `json:"pageSize"`   // 每页大小
 	Total      int64 `json:"total"`      // 总记录数

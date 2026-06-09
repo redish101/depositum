@@ -1,6 +1,8 @@
 package v1
 
-import "time"
+import (
+	"time"
+)
 
 type Library struct {
 	ID        uint      `json:"id"`
@@ -9,4 +11,14 @@ type Library struct {
 
 	Name    string `json:"name"`
 	Address string `json:"address"`
+}
+
+type CreateLibraryRequest struct {
+	Name    string `json:"name" validate:"required"`
+	Address string `json:"address" validate:"required"`
+}
+
+type UpdateLibraryRequest struct {
+	Name    string `json:"name" validate:"omitempty"`
+	Address string `json:"address" validate:"omitempty"`
 }
