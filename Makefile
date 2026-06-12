@@ -1,10 +1,13 @@
-all: depositum
+PKG=github.com/redish101/depositum
+SERVER=$(PKG)/cmd/depositum
 
-depositum:
-	go build -v
+all: server
+
+server:
+	go build -v $(SERVER)
 
 clean:
-	rm depositum
+	rm server
 
 fmt:
 	go fmt ./...
@@ -17,4 +20,4 @@ coverage:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out
 
-.PHONY: all clean fmt depositum test coverage
+.PHONY: all clean fmt server test coverage
