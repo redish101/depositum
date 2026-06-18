@@ -3,6 +3,7 @@ module github.com/redish101/depositum
 go 1.26.3
 
 require (
+	github.com/emicklei/go-restful/v3 v3.13.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.15.2
 	github.com/stretchr/testify v1.11.1

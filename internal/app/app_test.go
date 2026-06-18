@@ -1,8 +1,7 @@
-package application
+package app
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -11,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTestApp(t *testing.T) Application {
+func setupTestApp(t *testing.T) App {
 	cfg := &config.Config{
 		Debug: true,
 		Host:  "localhost",
@@ -26,7 +25,7 @@ func setupTestApp(t *testing.T) Application {
 	return app
 }
 
-func TestRunAndShutdown(t *testing.T) {
+func TestRun(t *testing.T) {
 	app := setupTestApp(t)
 
 	errChan := make(chan error, 1)
@@ -36,7 +35,7 @@ func TestRunAndShutdown(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	err := app.Shutdown()
+	err := app.Shutdown(t.Context())
 	assert.NoError(t, err)
 
 	select {
@@ -45,17 +44,4 @@ func TestRunAndShutdown(t *testing.T) {
 	case <-time.After(2 * time.Second):
 		assert.Fail(t, "关闭超时")
 	}
-}
-
-func TestNewEchoContext(t *testing.T) {
-	app := setupTestApp(t)
-
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	rec := httptest.NewRecorder()
-
-	ctx := app.NewEchoContext(req, rec)
-	assert.NotNil(t, ctx)
-
-	assert.Equal(t, req, ctx.Request())
-	assert.Equal(t, rec, ctx.Response().Writer)
 }

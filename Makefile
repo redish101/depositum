@@ -1,5 +1,5 @@
 PKG=github.com/redish101/depositum
-SERVER=$(PKG)/cmd/depositum
+SERVER=./cmd/depositum
 
 all: server
 

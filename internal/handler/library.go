@@ -1,13 +1,16 @@
 package handler
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/redish101/depositum/internal/response"
+	"net/http"
+
+	"github.com/emicklei/go-restful/v3"
 	"github.com/redish101/depositum/internal/service"
+	v1 "github.com/redish101/depositum/pkg/api/v1"
 )
 
 type LibraryHandler interface {
-	Get(c echo.Context) error
+	Register(container *restful.Container)
+	Get(req *restful.Request, resp *restful.Response)
 }
 
 type libraryHandler struct {
@@ -20,8 +23,27 @@ func NewLibraryHandler(libraryService service.LibraryService) LibraryHandler {
 	}
 }
 
-func (l *libraryHandler) Get(c echo.Context) error {
-	library, _ := l.libraryService.Get(c.Request().Context(), 1)
+func (l *libraryHandler) Register(container *restful.Container) {
+	ws := new(restful.WebService)
+	ws.Path("/libraries").
+		Consumes(restful.MIME_JSON).
+		Produces(restful.MIME_JSON)
 
-	return response.Write(c, library)
+	ws.Route(ws.GET("/{id}").To(l.Get))
+	container.Add(ws)
+}
+
+func (l *libraryHandler) Get(req *restful.Request, resp *restful.Response) {
+	l.libraryService.Create(req.Request.Context(), &v1.CreateLibraryRequest{
+		Name:    "1",
+		Address: "1",
+	})
+	library, err := l.libraryService.Get(req.Request.Context(), 1)
+
+	if err != nil {
+		resp.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+
+	resp.WriteEntity(library)
 }
