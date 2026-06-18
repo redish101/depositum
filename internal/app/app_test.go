@@ -1,11 +1,14 @@
 package app
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
 	"testing"
 	"time"
 
 	"github.com/redish101/depositum/internal/config"
+	v1 "github.com/redish101/depositum/pkg/api/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -13,14 +16,13 @@ import (
 func setupTestApp(t *testing.T) App {
 	cfg := &config.Config{
 		Debug: true,
-		Host:  "localhost",
+		Host:  "127.0.0.1",
 		Port:  "0",
 		DSN:   ":memory:",
 	}
 
 	app, err := New(cfg)
 	require.NoError(t, err)
-	require.NotNil(t, app)
 
 	return app
 }
@@ -28,20 +30,41 @@ func setupTestApp(t *testing.T) App {
 func TestRun(t *testing.T) {
 	app := setupTestApp(t)
 
-	errChan := make(chan error, 1)
+	errCh := make(chan error, 1)
+
 	go func() {
-		errChan <- app.Run()
+		errCh <- app.Run()
 	}()
 
-	time.Sleep(100 * time.Millisecond)
+	// 等待服务开始监听
+	select {
+	case <-app.Started():
+	case <-time.After(2 * time.Second):
+		t.Fatal("server start timeout")
+	}
 
-	err := app.Shutdown(t.Context())
-	assert.NoError(t, err)
+	// 检查健康检查接口
+	resp, err := http.Get("http://" + app.Addr() + "/api/v1/healthz")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+
+	var apiResp v1.HealthzResponse
+	json.Unmarshal(body, &apiResp)
+	assert.Equal(t, true, apiResp.Ok)
+
+	// 优雅关闭
+	err = app.Shutdown(t.Context())
+	require.NoError(t, err)
 
 	select {
-	case err := <-errChan:
+	case err := <-errCh:
 		assert.ErrorIs(t, err, http.ErrServerClosed)
 	case <-time.After(2 * time.Second):
-		assert.Fail(t, "关闭超时")
+		t.Fatal("server shutdown timeout")
 	}
 }

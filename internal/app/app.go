@@ -3,16 +3,20 @@ package app
 import (
 	"context"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/emicklei/go-restful/v3"
 	"github.com/redish101/depositum/internal/config"
 	"github.com/redish101/depositum/internal/db"
+	v1 "github.com/redish101/depositum/pkg/api/v1"
 	"gorm.io/gorm"
 )
 
 type App interface {
 	Run() error
+	Addr() string
+	Started() <-chan struct{}
 	Shutdown(ctx context.Context) error
 }
 
@@ -22,10 +26,12 @@ type app struct {
 	db *gorm.DB
 
 	server    *http.Server
+	mux       *http.ServeMux
 	container *restful.Container
+	listener  net.Listener
+	started   chan struct{}
 
 	services *Services
-	handlers *Handlers
 }
 
 func New(config *config.Config) (App, error) {
@@ -41,13 +47,17 @@ func New(config *config.Config) (App, error) {
 	}
 	app.db = db
 
+	app.mux = http.NewServeMux()
+
 	app.container = restful.NewContainer()
 
-	addr := app.config.Host + ":" + app.config.Port
+	app.mux.Handle(v1.BasePath+"/", http.StripPrefix(v1.BasePath, app.container))
+
 	app.server = &http.Server{
-		Handler: app.container,
-		Addr:    addr,
+		Handler: app.mux,
 	}
+
+	app.started = make(chan struct{})
 
 	app.initServices()
 	app.initHandlers()
@@ -57,12 +67,30 @@ func New(config *config.Config) (App, error) {
 
 func (app *app) Run() error {
 	addr := app.config.Host + ":" + app.config.Port
-
 	log.Println("监听 " + addr)
 
-	err := app.server.ListenAndServe()
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+	app.listener = ln
+
+	close(app.started)
+
+	err = app.server.Serve(ln)
 
 	return err
+}
+
+func (app *app) Addr() string {
+	if app.listener != nil {
+		return app.listener.Addr().String()
+	}
+	return ""
+}
+
+func (app *app) Started() <-chan struct{} {
+	return app.started
 }
 
 func (app *app) Shutdown(ctx context.Context) error {

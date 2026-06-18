@@ -3,13 +3,13 @@ package app
 import "github.com/redish101/depositum/internal/service"
 
 type Services struct {
-	LibraryService service.LibraryService
+	library service.LibraryService
 }
 
 func (app *app) initServices() {
-	services := &Services{}
+	libraryService := service.NewLibraryService(app.db)
 
-	services.LibraryService = service.NewLibraryService(app.db)
-
-	app.services = services
+	app.services = &Services{
+		library: libraryService,
+	}
 }
