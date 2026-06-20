@@ -108,11 +108,11 @@ func (l *libraryService) Update(ctx context.Context, id uint, req *v1.UpdateLibr
 		return nil, ErrLibraryNotFound
 	}
 
-	if req.Name != "" {
-		library.Name = req.Name
+	if req.Name != nil {
+		library.Name = *req.Name
 	}
-	if req.Address != "" {
-		library.Address = req.Address
+	if req.Address != nil {
+		library.Address = *req.Address
 	}
 
 	err = l.db.WithContext(ctx).Save(&library).Error

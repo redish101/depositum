@@ -24,7 +24,7 @@ func ReadPaginationParams(req *restful.Request) *v1.PaginationParams {
 	}
 
 	return &v1.PaginationParams{
-		Page: page,
+		Page:     page,
 		PageSize: pageSize,
 	}
 }

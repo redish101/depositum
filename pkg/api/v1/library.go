@@ -19,6 +19,10 @@ type CreateLibraryRequest struct {
 }
 
 type UpdateLibraryRequest struct {
-	Name    string `json:"name" validate:"omitempty"`
-	Address string `json:"address" validate:"omitempty"`
+	Name    *string `json:"name" validate:"omitempty"`
+	Address *string `json:"address" validate:"omitempty"`
 }
+
+// type DeleteLibraryResponse struct {
+// 	DeletedAt time.Time `json:"deletedAt"`
+// }

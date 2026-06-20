@@ -18,6 +18,17 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 	return db, err
 }
 
+func NewMemoryDB() (*gorm.DB, error) {
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"))
+	if err != nil {
+		return nil, err
+	}
+
+	err = Migrate(db)
+
+	return db, err
+}
+
 func Migrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&model.Object{},

@@ -70,9 +70,11 @@ func TestUpdateLibrary(t *testing.T) {
 	svc := setupTestLibrary(t)
 
 	t.Run("Success", func(t *testing.T) {
+		name := "Updated Library"
+		address := "Verilocus"
 		library, err := svc.Update(t.Context(), 1, &v1.UpdateLibraryRequest{
-			Name:    "Updated Library",
-			Address: "Verilocus",
+			Name:    &name,
+			Address: &address,
 		})
 		assert.NotNil(t, library)
 		assert.NoError(t, err)
@@ -80,9 +82,11 @@ func TestUpdateLibrary(t *testing.T) {
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
+		name := "Non-existent Library"
+		address := "Nusquamium"
 		_, err := svc.Update(t.Context(), 999, &v1.UpdateLibraryRequest{
-			Name:    "Non-existent Library",
-			Address: "Nusquamium",
+			Name:    &name,
+			Address: &address,
 		})
 		assert.ErrorIs(t, err, ErrLibraryNotFound)
 	})
