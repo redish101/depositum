@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/redish101/depositum/internal/common"
 	"github.com/redish101/depositum/internal/service"
 	v1 "github.com/redish101/depositum/pkg/api/v1"
@@ -12,10 +12,10 @@ import (
 
 type LibraryHandler interface {
 	Register(group *echo.Group)
-	List(c echo.Context) error
-	Get(c echo.Context) error
-	Update(c echo.Context) error
-	Delete(c echo.Context) error
+	List(c *echo.Context) error
+	Get(c *echo.Context) error
+	Update(c *echo.Context) error
+	Delete(c *echo.Context) error
 }
 
 type libraryHandler struct {
@@ -36,7 +36,7 @@ func (l *libraryHandler) Register(group *echo.Group) {
 	g.DELETE("/:id", l.Delete)
 }
 
-func (l *libraryHandler) List(c echo.Context) error {
+func (l *libraryHandler) List(c *echo.Context) error {
 	paginationParams := common.ReadPaginationParams(c)
 	libraries, err := l.libraryService.List(c.Request().Context(), paginationParams)
 	if err != nil {
@@ -45,7 +45,7 @@ func (l *libraryHandler) List(c echo.Context) error {
 	return common.WriteEntity(c, libraries)
 }
 
-func (l *libraryHandler) Get(c echo.Context) error {
+func (l *libraryHandler) Get(c *echo.Context) error {
 	idStr := c.Param("id")
 	id, err := common.ReadID(idStr)
 	if err != nil {
@@ -62,7 +62,7 @@ func (l *libraryHandler) Get(c echo.Context) error {
 	return common.WriteEntity(c, library)
 }
 
-func (l *libraryHandler) Update(c echo.Context) error {
+func (l *libraryHandler) Update(c *echo.Context) error {
 	idStr := c.Param("id")
 	id, err := common.ReadID(idStr)
 	if err != nil {
@@ -84,7 +84,7 @@ func (l *libraryHandler) Update(c echo.Context) error {
 	return common.WriteEntity(c, updatedLibrary)
 }
 
-func (l *libraryHandler) Delete(c echo.Context) error {
+func (l *libraryHandler) Delete(c *echo.Context) error {
 	idStr := c.Param("id")
 	id, err := common.ReadID(idStr)
 	if err != nil {

@@ -3,11 +3,11 @@ package common
 import (
 	"strconv"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	v1 "github.com/redish101/depositum/pkg/api/v1"
 )
 
-func ReadPaginationParams(c echo.Context) *v1.PaginationParams {
+func ReadPaginationParams(c *echo.Context) *v1.PaginationParams {
 	page := 1
 	pageSize := 10
 

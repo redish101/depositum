@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/redish101/depositum/internal/db"
 	"github.com/redish101/depositum/internal/service"
 	v1 "github.com/redish101/depositum/pkg/api/v1"
@@ -36,8 +36,7 @@ func setupTestLibraryHandler(t *testing.T) (*echo.Echo, uint) {
 	handler := NewLibraryHandler(libraryService)
 
 	e := echo.New()
-	e.HideBanner = true
-	e.HidePort = true
+
 	v1Group := e.Group("/v1")
 	handler.Register(v1Group)
 

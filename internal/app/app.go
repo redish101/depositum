@@ -6,7 +6,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/redish101/depositum/internal/config"
 	"github.com/redish101/depositum/internal/db"
 	"gorm.io/gorm"

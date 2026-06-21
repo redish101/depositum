@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/redish101/depositum/internal/handler"
 )
 
