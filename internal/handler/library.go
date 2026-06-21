@@ -4,18 +4,18 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/emicklei/go-restful/v3"
+	"github.com/labstack/echo/v4"
 	"github.com/redish101/depositum/internal/common"
 	"github.com/redish101/depositum/internal/service"
 	v1 "github.com/redish101/depositum/pkg/api/v1"
 )
 
 type LibraryHandler interface {
-	Register(container *restful.Container)
-	List(req *restful.Request, resp *restful.Response)
-	Get(req *restful.Request, resp *restful.Response)
-	Update(req *restful.Request, resp *restful.Response)
-	Delete(req *restful.Request, resp *restful.Response)
+	Register(group *echo.Group)
+	List(c echo.Context) error
+	Get(c echo.Context) error
+	Update(c echo.Context) error
+	Delete(c echo.Context) error
 }
 
 type libraryHandler struct {
@@ -24,94 +24,76 @@ type libraryHandler struct {
 
 func NewLibraryHandler(libraryService service.LibraryService) LibraryHandler {
 	return &libraryHandler{
-		libraryService,
+		libraryService: libraryService,
 	}
 }
 
-func (l *libraryHandler) Register(container *restful.Container) {
-	ws := new(restful.WebService)
-	ws.Path("/libraries").
-		Consumes(restful.MIME_JSON).
-		Produces(restful.MIME_JSON)
-
-	ws.Route(ws.GET("").To(l.List))
-	ws.Route(ws.GET("/{id}").To(l.Get))
-	ws.Route(ws.PATCH("/{id}").To(l.Update))
-	ws.Route(ws.DELETE("/{id}").To(l.Delete))
-
-	container.Add(ws)
+func (l *libraryHandler) Register(group *echo.Group) {
+	g := group.Group("/libraries")
+	g.GET("", l.List)
+	g.GET("/:id", l.Get)
+	g.PATCH("/:id", l.Update)
+	g.DELETE("/:id", l.Delete)
 }
 
-func (l *libraryHandler) List(req *restful.Request, resp *restful.Response) {
-	paginationParams := common.ReadPaginationParams(req)
-	libraries, err := l.libraryService.List(req.Request.Context(), paginationParams)
+func (l *libraryHandler) List(c echo.Context) error {
+	paginationParams := common.ReadPaginationParams(c)
+	libraries, err := l.libraryService.List(c.Request().Context(), paginationParams)
 	if err != nil {
-		resp.WriteError(http.StatusInternalServerError, err)
-		return
+		return common.WriteError(c, http.StatusInternalServerError, err)
 	}
-	resp.WriteEntity(libraries)
+	return common.WriteEntity(c, libraries)
 }
 
-func (l *libraryHandler) Get(req *restful.Request, resp *restful.Response) {
-	idStr := req.PathParameter("id")
-
+func (l *libraryHandler) Get(c echo.Context) error {
+	idStr := c.Param("id")
 	id, err := common.ReadID(idStr)
 	if err != nil {
-		resp.WriteError(http.StatusBadRequest, err)
-		return
+		return common.WriteError(c, http.StatusBadRequest, err)
 	}
 
-	library, err := l.libraryService.Get(req.Request.Context(), id)
-
+	library, err := l.libraryService.Get(c.Request().Context(), id)
 	if err != nil {
 		if errors.Is(err, service.ErrLibraryNotFound) {
-			common.WriteError(resp, http.StatusNotFound, err)
-			return
+			return common.WriteError(c, http.StatusNotFound, err)
 		}
-		common.WriteError(resp, http.StatusInternalServerError, err)
-		return
+		return common.WriteError(c, http.StatusInternalServerError, err)
 	}
-
-	resp.WriteEntity(library)
+	return common.WriteEntity(c, library)
 }
 
-func (l *libraryHandler) Update(req *restful.Request, resp *restful.Response) {
-	id, err := common.ReadID(req.PathParameter("id"))
+func (l *libraryHandler) Update(c echo.Context) error {
+	idStr := c.Param("id")
+	id, err := common.ReadID(idStr)
 	if err != nil {
-		common.WriteError(resp, http.StatusBadRequest, err)
-		return
+		return common.WriteError(c, http.StatusBadRequest, err)
 	}
 
 	var params v1.UpdateLibraryRequest
-
-	if err := req.ReadEntity(&params); err != nil {
-		common.WriteError(resp, http.StatusBadRequest, err)
-		return
+	if err := c.Bind(&params); err != nil {
+		return common.WriteError(c, http.StatusBadRequest, err)
 	}
 
-	updatedLibrary, err := l.libraryService.Update(req.Request.Context(), id, &params)
-	if err != nil && errors.Is(err, service.ErrLibraryNotFound) {
-		common.WriteError(resp, http.StatusNotFound, err)
-		return
-	}
+	updatedLibrary, err := l.libraryService.Update(c.Request().Context(), id, &params)
 	if err != nil {
-		common.WriteError(resp, http.StatusInternalServerError, err)
-		return
+		if errors.Is(err, service.ErrLibraryNotFound) {
+			return common.WriteError(c, http.StatusNotFound, err)
+		}
+		return common.WriteError(c, http.StatusInternalServerError, err)
 	}
-	resp.WriteEntity(updatedLibrary)
+	return common.WriteEntity(c, updatedLibrary)
 }
 
-func (l *libraryHandler) Delete(req *restful.Request, resp *restful.Response) {
-	id, err := common.ReadID(req.PathParameter("id"))
+func (l *libraryHandler) Delete(c echo.Context) error {
+	idStr := c.Param("id")
+	id, err := common.ReadID(idStr)
 	if err != nil {
-		common.WriteError(resp, http.StatusBadRequest, err)
-		return
+		return common.WriteError(c, http.StatusBadRequest, err)
 	}
 
-	err = l.libraryService.Delete(req.Request.Context(), id)
+	err = l.libraryService.Delete(c.Request().Context(), id)
 	if err != nil {
-		common.WriteError(resp, http.StatusInternalServerError, err)
-		return
+		return common.WriteError(c, http.StatusInternalServerError, err)
 	}
-	resp.WriteHeader(http.StatusNoContent)
+	return c.NoContent(http.StatusNoContent) // 无内容响应，无实体，可直接使用 echo 原生方法
 }

@@ -6,10 +6,9 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/emicklei/go-restful/v3"
+	"github.com/labstack/echo/v4"
 	"github.com/redish101/depositum/internal/config"
 	"github.com/redish101/depositum/internal/db"
-	v1 "github.com/redish101/depositum/pkg/api/v1"
 	"gorm.io/gorm"
 )
 
@@ -25,11 +24,10 @@ type app struct {
 
 	db *gorm.DB
 
-	server    *http.Server
-	mux       *http.ServeMux
-	container *restful.Container
-	listener  net.Listener
-	started   chan struct{}
+	server   *http.Server
+	echo     *echo.Echo
+	listener net.Listener
+	started  chan struct{}
 
 	services *Services
 }
@@ -47,20 +45,18 @@ func New(config *config.Config) (App, error) {
 	}
 	app.db = db
 
-	app.mux = http.NewServeMux()
+	app.echo = NewEcho()
 
-	app.container = restful.NewContainer()
-
-	app.mux.Handle(v1.BasePath+"/", http.StripPrefix(v1.BasePath, app.container))
+	// 设置全局前缀 /v1
+	v1Group := app.echo.Group("/api/v1")
+	app.initServices()
+	app.initHandlers(v1Group)
 
 	app.server = &http.Server{
-		Handler: app.mux,
+		Handler: app.echo,
 	}
 
 	app.started = make(chan struct{})
-
-	app.initServices()
-	app.initHandlers()
 
 	return app, nil
 }

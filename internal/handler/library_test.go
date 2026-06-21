@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/emicklei/go-restful/v3"
+	"github.com/labstack/echo/v4"
 	"github.com/redish101/depositum/internal/db"
 	"github.com/redish101/depositum/internal/service"
 	v1 "github.com/redish101/depositum/pkg/api/v1"
@@ -21,7 +21,7 @@ const (
 	testLibraryAddress = "Test Library Address"
 )
 
-func setupTestLibraryHandler(t *testing.T) (*restful.Container, uint) {
+func setupTestLibraryHandler(t *testing.T) (*echo.Echo, uint) {
 	db, err := db.NewMemoryDB()
 	require.NoError(t, err)
 
@@ -35,19 +35,22 @@ func setupTestLibraryHandler(t *testing.T) (*restful.Container, uint) {
 
 	handler := NewLibraryHandler(libraryService)
 
-	container := restful.NewContainer()
-	handler.Register(container)
+	e := echo.New()
+	e.HideBanner = true
+	e.HidePort = true
+	v1Group := e.Group("/v1")
+	handler.Register(v1Group)
 
-	return container, library.ID
+	return e, library.ID
 }
 
 func TestListLibraries(t *testing.T) {
-	container, _ := setupTestLibraryHandler(t)
-	req := httptest.NewRequest(http.MethodGet, "/libraries", nil)
+	e, _ := setupTestLibraryHandler(t)
+	req := httptest.NewRequest(http.MethodGet, "/v1/libraries", nil)
 	rec := httptest.NewRecorder()
-	container.ServeHTTP(rec, req)
+	e.ServeHTTP(rec, req)
 
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, http.StatusOK, rec.Code)
 
 	var resp v1.PaginationResponse[v1.Library]
 	err := json.Unmarshal(rec.Body.Bytes(), &resp)
@@ -59,17 +62,11 @@ func TestListLibraries(t *testing.T) {
 }
 
 func TestGetLibrary(t *testing.T) {
-	container, id := setupTestLibraryHandler(t)
+	e, id := setupTestLibraryHandler(t)
 
-	req := httptest.NewRequest(
-		http.MethodGet,
-		fmt.Sprintf("/libraries/%d", id),
-		nil,
-	)
-
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/v1/libraries/%d", id), nil)
 	rec := httptest.NewRecorder()
-
-	container.ServeHTTP(rec, req)
+	e.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusOK, rec.Code)
 
@@ -81,7 +78,7 @@ func TestGetLibrary(t *testing.T) {
 }
 
 func TestUpdateLibrary(t *testing.T) {
-	container, id := setupTestLibraryHandler(t)
+	e, id := setupTestLibraryHandler(t)
 
 	updatedName := "Updated Library"
 	updatedAddress := "Updated Address"
@@ -91,29 +88,17 @@ func TestUpdateLibrary(t *testing.T) {
 		Address: &updatedAddress,
 	})
 
-	req := httptest.NewRequest(
-		http.MethodPatch,
-		fmt.Sprintf("/libraries/%d", id),
-		bytes.NewReader(body),
-	)
+	req := httptest.NewRequest(http.MethodPatch, fmt.Sprintf("/v1/libraries/%d", id), bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-
 	rec := httptest.NewRecorder()
-
-	container.ServeHTTP(rec, req)
+	e.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusOK, rec.Code)
 
 	// 再 GET 验证
-	req = httptest.NewRequest(
-		http.MethodGet,
-		fmt.Sprintf("/libraries/%d", id),
-		nil,
-	)
-
+	req = httptest.NewRequest(http.MethodGet, fmt.Sprintf("/v1/libraries/%d", id), nil)
 	rec = httptest.NewRecorder()
-
-	container.ServeHTTP(rec, req)
+	e.ServeHTTP(rec, req)
 
 	var library v1.Library
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &library))
@@ -123,11 +108,11 @@ func TestUpdateLibrary(t *testing.T) {
 }
 
 func TestDeleteLibrary(t *testing.T) {
-	container, id := setupTestLibraryHandler(t)
+	e, id := setupTestLibraryHandler(t)
 
-	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/libraries/%d", id), nil)
+	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/v1/libraries/%d", id), nil)
 	rec := httptest.NewRecorder()
-	container.ServeHTTP(rec, req)
+	e.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusNoContent, rec.Code)
 }
