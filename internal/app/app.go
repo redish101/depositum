@@ -45,7 +45,11 @@ func New(config *config.Config) (App, error) {
 	}
 	app.db = db
 
-	app.echo = NewEcho()
+	e, err := NewEcho()
+	if err != nil {
+		return nil, err
+	}
+	app.echo = e
 
 	// 设置全局前缀 /v1
 	v1Group := app.echo.Group("/api/v1")
