@@ -3,13 +3,18 @@ package service
 import (
 	"testing"
 
+	"github.com/redish101/depositum/internal/db"
 	v1 "github.com/redish101/depositum/pkg/api/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func newTestLibraryService(t *testing.T) LibraryService {
-	return NewLibraryService(newTestDB(t))
+	db, err := db.NewMemoryDB()
+
+	require.NoError(t, err)
+
+	return NewLibraryService(db)
 }
 
 func setupTestLibrary(t *testing.T) LibraryService {
@@ -49,7 +54,7 @@ func TestListLibrary(t *testing.T) {
 			PageSize: 10,
 		})
 		assert.NoError(t, err)
-		assert.Len(t, resp.Items, 1)
+		assert.Equal(t, resp.Items[0].Name, "Test Library")
 	})
 }
 

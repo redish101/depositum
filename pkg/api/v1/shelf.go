@@ -1,11 +1,14 @@
 package v1
 
-type Shelf struct {
-	ID uint `json:"id"`
+import "time"
 
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	LibraryID   uint   `json:"libraryID"`
+type Shelf struct {
+	ID          uint      `json:"id"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	LibraryID   uint      `json:"libraryID"`
 }
 
 type CreateShelfRequest struct {

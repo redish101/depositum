@@ -25,10 +25,13 @@ func (e *errorHandler) Register(echo *echo.Echo) {
 }
 
 func (h *errorHandler) All(c *echo.Context, err error) {
-    if httpErr, ok := errors.AsType[interface{Error() string; StatusCode() int}](err); ok {
-        common.WriteError(c, httpErr.StatusCode(), fmt.Errorf("%s", httpErr.Error()))
-        return
-    }
+	if httpErr, ok := errors.AsType[interface {
+		Error() string
+		StatusCode() int
+	}](err); ok {
+		common.WriteError(c, httpErr.StatusCode(), fmt.Errorf("%s", httpErr.Error()))
+		return
+	}
 
-    common.WriteError(c, http.StatusInternalServerError, err)
+	common.WriteError(c, http.StatusInternalServerError, err)
 }
