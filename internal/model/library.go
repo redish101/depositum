@@ -7,7 +7,4 @@ type Library struct {
 
 	Name    string
 	Address string
-
-	Shelves []Shelf
-	Objects []Object
 }

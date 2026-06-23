@@ -1,24 +1,11 @@
 package model
 
-import (
-	"time"
+import "gorm.io/gorm"
 
-	"gorm.io/gorm"
-)
-
-const (
-	ObjectCreateOperation   = "create"
-	ObjectUpdateOperation   = "update"
-	ObjectMoveOperation     = "move"
-	ObjectWithDrawOperation = "withdraw"
-	ObjectRestoreOperation  = "restore"
-	ObjectDeleteOperation   = "delete"
-)
-
-type ObjectOperation struct {
-	Verb   string
-	Object string
-	Date   time.Time
+type ObjectStatus struct {
+	Phase     string
+	LibraryID uint
+	ShelfID   uint
 }
 
 type Object struct {
@@ -27,11 +14,6 @@ type Object struct {
 	Name        string
 	Description string
 
-	LibraryID uint
-	Library   Library
-
-	ShelfID uint
-	Shelf   Shelf
-
-	History []ObjectOperation `gorm:"-"`
+	CurrentStatus ObjectStatus `gorm:"embedded;embeddedPrefix:current_"`
+	DesiredStatus ObjectStatus `gorm:"embedded;embeddedPrefix:desired_"`
 }
