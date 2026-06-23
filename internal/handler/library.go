@@ -12,6 +12,7 @@ import (
 
 type LibraryHandler interface {
 	Register(group *echo.Group)
+	Create(c *echo.Context) error
 	List(c *echo.Context) error
 	Get(c *echo.Context) error
 	Update(c *echo.Context) error
@@ -30,10 +31,28 @@ func NewLibraryHandler(libraryService service.LibraryService) LibraryHandler {
 
 func (l *libraryHandler) Register(group *echo.Group) {
 	g := group.Group("/libraries")
+	g.POST("", l.Create)
 	g.GET("", l.List)
 	g.GET("/:id", l.Get)
 	g.PATCH("/:id", l.Update)
 	g.DELETE("/:id", l.Delete)
+}
+
+func (l *libraryHandler) Create(c *echo.Context) error {
+	var params v1.CreateLibraryRequest
+	if err := c.Bind(&params); err != nil {
+		return common.WriteError(c, http.StatusBadRequest, err)
+	}
+	if err := c.Validate(&params); err != nil {
+		return common.WriteError(c, http.StatusBadRequest, err)
+	}
+
+	library, err := l.libraryService.Create(c.Request().Context(), &params)
+	if err != nil {
+		return common.WriteError(c, http.StatusInternalServerError, err)
+	}
+
+	return common.WriteEntity(c, library)
 }
 
 func (l *libraryHandler) List(c *echo.Context) error {
@@ -73,6 +92,9 @@ func (l *libraryHandler) Update(c *echo.Context) error {
 	if err := c.Bind(&params); err != nil {
 		return common.WriteError(c, http.StatusBadRequest, err)
 	}
+	if err := c.Validate(&params); err != nil {
+		return common.WriteError(c, http.StatusBadRequest, err)
+	}
 
 	updatedLibrary, err := l.libraryService.Update(c.Request().Context(), id, &params)
 	if err != nil {
@@ -81,6 +103,7 @@ func (l *libraryHandler) Update(c *echo.Context) error {
 		}
 		return common.WriteError(c, http.StatusInternalServerError, err)
 	}
+
 	return common.WriteEntity(c, updatedLibrary)
 }
 

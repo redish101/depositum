@@ -9,6 +9,9 @@ func (app *app) initHandlers(v1 *echo.Group) {
 	libraryHandler := handler.NewLibraryHandler(app.services.library)
 	libraryHandler.Register(v1)
 
+	shelfHandler := handler.NewShelfHandler(app.services.shelf)
+	shelfHandler.Register(v1)
+
 	healthzHandler := handler.NewHealthzHandler()
 	healthzHandler.Register(v1)
 }

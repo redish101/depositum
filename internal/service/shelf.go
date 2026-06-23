@@ -161,5 +161,9 @@ func (s *shelfService) Update(ctx context.Context, id uint, request *v1.UpdateSh
 func (s *shelfService) Delete(ctx context.Context, id uint) error {
 	err := s.db.WithContext(ctx).Delete(&model.Shelf{}, id).Error
 
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return ErrShelfNotFound
+	}
+
 	return err
 }
