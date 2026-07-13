@@ -226,7 +226,7 @@ func (s *objectService) Update(ctx context.Context, id uint, request *v1.UpdateO
 
 	writeSyncStatus(&obj)
 
-	err = s.db.WithContext(ctx).Updates(&obj).Error
+	err = s.db.WithContext(ctx).Save(&obj).Error
 	if err != nil {
 		return nil, err
 	}
@@ -251,6 +251,11 @@ func (s *objectService) Sync(ctx context.Context, id uint) (*v1.Object, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrObjectNotFound
 		}
+		return nil, err
+	}
+
+	err = checkLibraryAndShelfExist(ctx, s.libraryService, s.shelfService, obj.DesiredStatus.LibraryID, obj.DesiredStatus.ShelfID)
+	if err != nil {
 		return nil, err
 	}
 
