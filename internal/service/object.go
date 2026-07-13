@@ -22,14 +22,15 @@ type ObjectService interface {
 
 var (
 	ErrInvalidListObjectsParams = errors.New("invalid list objects params")
-	ErrInvalidShelfID = errors.New("invalid shelf ID")
-	ErrObjectNotFound = errors.New("object not found")
+	ErrInvalidShelfID           = errors.New("invalid shelf ID")
+	ErrObjectNotFound           = errors.New("object not found")
+	ErrShelfNotInLibrary        = errors.New("shelf does not belong to library")
 )
 
 type objectService struct {
-	db *gorm.DB
+	db             *gorm.DB
 	libraryService LibraryService
-	shelfService ShelfService
+	shelfService   ShelfService
 }
 
 func NewObjectService(db *gorm.DB, libraryService LibraryService, shelfService ShelfService) ObjectService {
@@ -51,11 +52,11 @@ func (s *objectService) List(ctx context.Context, pageParams *v1.PaginationParam
 		}
 
 		if listParams.LibraryID != nil {
-			db = db.Where("current_library_id", *listParams.LibraryID)
+			db = db.Where("current_library_id = ?", *listParams.LibraryID)
 		}
 
 		if listParams.ShelfID != nil {
-			db = db.Where("current_shelf_id", *listParams.ShelfID)
+			db = db.Where("current_shelf_id = ?", *listParams.ShelfID)
 		}
 
 		return db
@@ -70,24 +71,24 @@ func (s *objectService) List(ctx context.Context, pageParams *v1.PaginationParam
 	resp := make([]v1.Object, len(objects.Items))
 	for i, obj := range objects.Items {
 		resp[i] = v1.Object{
-			ID: obj.ID,
-			CreatedAt: obj.CreatedAt,
-			UpdatedAt: obj.UpdatedAt,
-			Name: obj.Name,
-			Description: obj.Description,
-			Synced: obj.Synced,
+			ID:            obj.ID,
+			CreatedAt:     obj.CreatedAt,
+			UpdatedAt:     obj.UpdatedAt,
+			Name:          obj.Name,
+			Description:   obj.Description,
+			Synced:        obj.Synced,
 			CurrentStatus: v1.ObjectStatus(obj.CurrentStatus),
 			DesiredStatus: v1.ObjectStatus(obj.DesiredStatus),
 		}
 	}
 
 	return &v1.PaginationResponse[v1.Object]{
-		Items: resp,
-		Page: objects.Page,
-		PageSize: objects.PageSize,
-		Total: objects.Total,
+		Items:      resp,
+		Page:       objects.Page,
+		PageSize:   objects.PageSize,
+		Total:      objects.Total,
 		TotalPages: objects.TotalPages,
-		HasNext: objects.HasNext,
+		HasNext:    objects.HasNext,
 	}, nil
 }
 
@@ -95,17 +96,20 @@ func (s *objectService) Get(ctx context.Context, id uint) (*v1.Object, error) {
 	var obj model.Object
 
 	err := s.db.WithContext(ctx).First(&obj, id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrObjectNotFound
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrObjectNotFound
+		}
+		return nil, err
 	}
 
 	return &v1.Object{
-		ID: obj.ID,
-		CreatedAt: obj.CreatedAt,
-		UpdatedAt: obj.UpdatedAt,
-		Name: obj.Name,
-		Description: obj.Description,
-		Synced: obj.Synced,
+		ID:            obj.ID,
+		CreatedAt:     obj.CreatedAt,
+		UpdatedAt:     obj.UpdatedAt,
+		Name:          obj.Name,
+		Description:   obj.Description,
+		Synced:        obj.Synced,
 		CurrentStatus: v1.ObjectStatus(obj.CurrentStatus),
 		DesiredStatus: v1.ObjectStatus(obj.DesiredStatus),
 	}, nil
@@ -123,14 +127,19 @@ func writeSyncStatus(obj *model.Object) {
 	}
 }
 
-func checkShelfExists(ctx context.Context, shelfService ShelfService, shelfID uint) error {
-	_, err := shelfService.Get(ctx, shelfID)
+func checkShelfExists(ctx context.Context, shelfService ShelfService, libraryID uint, shelfID uint) error {
+	shelf, err := shelfService.Get(ctx, shelfID)
 	if err != nil {
 		if errors.Is(err, ErrShelfNotFound) {
 			return ErrInvalidShelfID
 		}
 		return err
 	}
+
+	if shelf.LibraryID != libraryID {
+		return ErrShelfNotInLibrary
+	}
+
 	return nil
 }
 
@@ -140,7 +149,7 @@ func checkLibraryAndShelfExist(ctx context.Context, libraryService LibraryServic
 		return err
 	}
 
-	err = checkShelfExists(ctx, shelfService, shelfID)
+	err = checkShelfExists(ctx, shelfService, libraryID, shelfID)
 	if err != nil {
 		return err
 	}
@@ -155,8 +164,8 @@ func (s *objectService) Create(ctx context.Context, request *v1.CreateObjectRequ
 	}
 
 	obj := model.Object{
-		Name: request.Name,
-		Description: request.Description,
+		Name:          request.Name,
+		Description:   request.Description,
 		DesiredStatus: model.ObjectStatus(request.DesiredStatus),
 	}
 
@@ -172,12 +181,12 @@ func (s *objectService) Create(ctx context.Context, request *v1.CreateObjectRequ
 	}
 
 	return &v1.Object{
-		ID: obj.ID,
-		CreatedAt: obj.CreatedAt,
-		UpdatedAt: obj.UpdatedAt,
-		Name: obj.Name,
-		Description: obj.Description,
-		Synced: obj.Synced,
+		ID:            obj.ID,
+		CreatedAt:     obj.CreatedAt,
+		UpdatedAt:     obj.UpdatedAt,
+		Name:          obj.Name,
+		Description:   obj.Description,
+		Synced:        obj.Synced,
 		CurrentStatus: v1.ObjectStatus(obj.CurrentStatus),
 		DesiredStatus: v1.ObjectStatus(obj.DesiredStatus),
 	}, nil
@@ -187,8 +196,11 @@ func (s *objectService) Update(ctx context.Context, id uint, request *v1.UpdateO
 	var obj model.Object
 
 	err := s.db.WithContext(ctx).First(&obj, id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrObjectNotFound
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrObjectNotFound
+		}
+		return nil, err
 	}
 
 	if request.Name != nil {
@@ -220,12 +232,12 @@ func (s *objectService) Update(ctx context.Context, id uint, request *v1.UpdateO
 	}
 
 	return &v1.Object{
-		ID: obj.ID,
-		CreatedAt: obj.CreatedAt,
-		UpdatedAt: obj.UpdatedAt,
-		Name: obj.Name,
-		Description: obj.Description,
-		Synced: obj.Synced,
+		ID:            obj.ID,
+		CreatedAt:     obj.CreatedAt,
+		UpdatedAt:     obj.UpdatedAt,
+		Name:          obj.Name,
+		Description:   obj.Description,
+		Synced:        obj.Synced,
 		CurrentStatus: v1.ObjectStatus(obj.CurrentStatus),
 		DesiredStatus: v1.ObjectStatus(obj.DesiredStatus),
 	}, nil
@@ -235,8 +247,11 @@ func (s *objectService) Sync(ctx context.Context, id uint) (*v1.Object, error) {
 	var obj model.Object
 
 	err := s.db.WithContext(ctx).First(&obj, id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrObjectNotFound
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrObjectNotFound
+		}
+		return nil, err
 	}
 
 	obj.CurrentStatus = obj.DesiredStatus
@@ -248,12 +263,12 @@ func (s *objectService) Sync(ctx context.Context, id uint) (*v1.Object, error) {
 	}
 
 	return &v1.Object{
-		ID: obj.ID,
-		CreatedAt: obj.CreatedAt,
-		UpdatedAt: obj.UpdatedAt,
-		Name: obj.Name,
-		Description: obj.Description,
-		Synced: obj.Synced,
+		ID:            obj.ID,
+		CreatedAt:     obj.CreatedAt,
+		UpdatedAt:     obj.UpdatedAt,
+		Name:          obj.Name,
+		Description:   obj.Description,
+		Synced:        obj.Synced,
 		CurrentStatus: v1.ObjectStatus(obj.CurrentStatus),
 		DesiredStatus: v1.ObjectStatus(obj.DesiredStatus),
 	}, nil
@@ -261,6 +276,5 @@ func (s *objectService) Sync(ctx context.Context, id uint) (*v1.Object, error) {
 
 func (s *objectService) Delete(ctx context.Context, id uint) error {
 	err := s.db.WithContext(ctx).Delete(&model.Object{}, id).Error
-
 	return err
 }
