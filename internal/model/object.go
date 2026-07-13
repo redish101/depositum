@@ -16,4 +16,6 @@ type Object struct {
 
 	CurrentStatus ObjectStatus `gorm:"embedded;embeddedPrefix:current_"`
 	DesiredStatus ObjectStatus `gorm:"embedded;embeddedPrefix:desired_"`
+
+	Synced bool
 }
