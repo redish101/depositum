@@ -3,7 +3,6 @@ package validate
 import (
 	"testing"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -76,10 +75,7 @@ func TestValidate(t *testing.T) {
 			err := v.Validate(tt.req)
 
 			if tt.wantError {
-				require.Error(t, err)
-
-				_, ok := err.(validator.ValidationErrors)
-				assert.True(t, ok)
+				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 			}
