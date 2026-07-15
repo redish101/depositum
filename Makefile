@@ -4,10 +4,10 @@ SERVER=./cmd/depositum
 all: server
 
 server:
-	go build -v $(SERVER)
+	go build -v -o bin/depositum $(SERVER)
 
 clean:
-	rm server
+	rm -r bin
 
 fmt:
 	go fmt ./...

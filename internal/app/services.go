@@ -3,9 +3,9 @@ package app
 import "github.com/redish101/depositum/internal/service"
 
 type Services struct {
-	library service.LibraryService
-	shelf   service.ShelfService
-	object  service.ObjectService
+	Library service.LibraryService
+	Shelf   service.ShelfService
+	Object  service.ObjectService
 }
 
 func (app *app) initServices() {
@@ -14,8 +14,8 @@ func (app *app) initServices() {
 	objectService := service.NewObjectService(app.db, libraryService, shelfService)
 
 	app.services = &Services{
-		library: libraryService,
-		shelf:   shelfService,
-		object:  objectService,
+		Library: libraryService,
+		Shelf:   shelfService,
+		Object:  objectService,
 	}
 }

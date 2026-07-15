@@ -1,0 +1,36 @@
+scalar Time
+
+type Library {
+    id: ID!
+    createdAt: Time!
+    updatedAt: Time!
+
+    name: String!
+    address: String!
+}
+
+input CreateLibraryRequest {
+    name: String!
+    address: String!
+}
+
+input UpdateLibraryRequest {
+    name: String
+    address: String
+}
+
+type Query {
+    library(id: ID!): Library
+    libraries: [Library!]!
+}
+
+type Mutation {
+    createLibrary(input: CreateLibraryRequest!): Library!
+
+    updateLibrary(
+        id: ID!
+        input: UpdateLibraryRequest!
+    ): Library!
+
+    deleteLibrary(id: ID!): Boolean!
+}
