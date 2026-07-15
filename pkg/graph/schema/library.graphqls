@@ -9,6 +9,11 @@ type Library {
     address: String!
 }
 
+type Libraries {
+    items: [Library!]!
+    pageInfo: PageInfo!
+}
+
 input CreateLibraryRequest {
     name: String!
     address: String!
@@ -21,7 +26,7 @@ input UpdateLibraryRequest {
 
 type Query {
     library(id: ID!): Library
-    libraries: [Library!]!
+    libraries(pageParams: PageParams): Libraries!
 }
 
 type Mutation {

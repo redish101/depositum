@@ -12,7 +12,7 @@ import (
 
 type LibraryService interface {
 	Get(ctx context.Context, id uint) (*v1.Library, error)
-	List(ctx context.Context, pageParams *v1.PaginationParams) (*v1.PaginationResponse[v1.Library], error)
+	List(ctx context.Context, pageParams *v1.PaginationParams) (*v1.PaginationResponse[*v1.Library], error)
 	Create(ctx context.Context, request *v1.CreateLibraryRequest) (*v1.Library, error)
 	Update(ctx context.Context, id uint, request *v1.UpdateLibraryRequest) (*v1.Library, error)
 	Delete(ctx context.Context, id uint) error
@@ -51,15 +51,15 @@ func (l *libraryService) Get(ctx context.Context, id uint) (*v1.Library, error) 
 	return resp, nil
 }
 
-func (l *libraryService) List(ctx context.Context, pageParams *v1.PaginationParams) (*v1.PaginationResponse[v1.Library], error) {
+func (l *libraryService) List(ctx context.Context, pageParams *v1.PaginationParams) (*v1.PaginationResponse[*v1.Library], error) {
 	libraries, err := db.Paginate[model.Library](ctx, l.db, pageParams)
 	if err != nil {
-		return &v1.PaginationResponse[v1.Library]{}, err
+		return nil, err
 	}
 
-	resp := make([]v1.Library, len(libraries.Items))
+	resp := make([]*v1.Library, len(libraries.Items))
 	for i, library := range libraries.Items {
-		resp[i] = v1.Library{
+		resp[i] = &v1.Library{
 			ID:        library.ID,
 			CreatedAt: library.CreatedAt,
 			UpdatedAt: library.UpdatedAt,
@@ -68,7 +68,7 @@ func (l *libraryService) List(ctx context.Context, pageParams *v1.PaginationPara
 		}
 	}
 
-	return &v1.PaginationResponse[v1.Library]{
+	return &v1.PaginationResponse[*v1.Library]{
 		Items:      resp,
 		Page:       libraries.Page,
 		PageSize:   libraries.PageSize,

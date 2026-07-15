@@ -16,6 +16,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	v1 "github.com/redish101/depositum/pkg/api/v1"
+	"github.com/redish101/depositum/pkg/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -38,6 +39,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Libraries struct {
+		Items    func(childComplexity int) int
+		PageInfo func(childComplexity int) int
+	}
+
 	Library struct {
 		Address   func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
@@ -52,8 +58,14 @@ type ComplexityRoot struct {
 		UpdateLibrary func(childComplexity int, id uint, input v1.UpdateLibraryRequest) int
 	}
 
+	PageInfo struct {
+		HasNext func(childComplexity int) int
+		HasPrev func(childComplexity int) int
+		Total   func(childComplexity int) int
+	}
+
 	Query struct {
-		Libraries func(childComplexity int) int
+		Libraries func(childComplexity int, pageParams *model.PageParams) int
 		Library   func(childComplexity int, id uint) int
 	}
 }
@@ -69,7 +81,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Library(ctx context.Context, id uint) (*v1.Library, error)
-	Libraries(ctx context.Context) ([]*v1.Library, error)
+	Libraries(ctx context.Context, pageParams *model.PageParams) (*model.Libraries, error)
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -89,6 +101,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	ec := newExecutionContext(nil, e, nil)
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Libraries.items":
+		if e.ComplexityRoot.Libraries.Items == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Libraries.Items(childComplexity), true
+	case "Libraries.pageInfo":
+		if e.ComplexityRoot.Libraries.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Libraries.PageInfo(childComplexity), true
 
 	case "Library.address":
 		if e.ComplexityRoot.Library.Address == nil {
@@ -155,12 +180,36 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Mutation.UpdateLibrary(childComplexity, args["id"].(uint), args["input"].(v1.UpdateLibraryRequest)), true
 
+	case "PageInfo.HasNext":
+		if e.ComplexityRoot.PageInfo.HasNext == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PageInfo.HasNext(childComplexity), true
+	case "PageInfo.HasPrev":
+		if e.ComplexityRoot.PageInfo.HasPrev == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PageInfo.HasPrev(childComplexity), true
+	case "PageInfo.total":
+		if e.ComplexityRoot.PageInfo.Total == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PageInfo.Total(childComplexity), true
+
 	case "Query.libraries":
 		if e.ComplexityRoot.Query.Libraries == nil {
 			break
 		}
 
-		return e.ComplexityRoot.Query.Libraries(childComplexity), true
+		args, err := ec.field_Query_libraries_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Libraries(childComplexity, args["pageParams"].(*model.PageParams)), true
 	case "Query.library":
 		if e.ComplexityRoot.Query.Library == nil {
 			break
@@ -182,6 +231,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateLibraryRequest,
+		ec.unmarshalInputPageParams,
 		ec.unmarshalInputUpdateLibraryRequest,
 	)
 	first := true
@@ -257,7 +307,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/library.graphqls"
+//go:embed "schema/library.graphqls" "schema/paginate.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -270,12 +320,23 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "schema/library.graphqls", Input: sourceData("schema/library.graphqls"), BuiltIn: false},
+	{Name: "schema/paginate.graphqls", Input: sourceData("schema/paginate.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // childFields_* functions provide shared child field context lookups.
 // Each function is generated once per unique object type, deduplicating the
 // switch statements that were previously inlined in every fieldContext_* function.
+
+func (ec *executionContext) childFields_Libraries(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "items":
+		return ec.fieldContext_Libraries_items(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_Libraries_pageInfo(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Libraries", field.Name)
+}
 
 func (ec *executionContext) childFields_Library(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
@@ -291,6 +352,18 @@ func (ec *executionContext) childFields_Library(ctx context.Context, field graph
 		return ec.fieldContext_Library_address(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Library", field.Name)
+}
+
+func (ec *executionContext) childFields_PageInfo(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "total":
+		return ec.fieldContext_PageInfo_total(ctx, field)
+	case "HasNext":
+		return ec.fieldContext_PageInfo_HasNext(ctx, field)
+	case "HasPrev":
+		return ec.fieldContext_PageInfo_HasPrev(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
 }
 
 func (ec *executionContext) childFields___Directive(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -473,6 +546,20 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_libraries_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "pageParams",
+		func(ctx context.Context, v any) (*model.PageParams, error) {
+			return ec.unmarshalOPageParams2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐPageParams(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["pageParams"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_library_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -546,6 +633,70 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ***************************** args.gotpl *****************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Libraries_items(ctx context.Context, field graphql.CollectedField, obj *model.Libraries) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Libraries_items(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Items, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*v1.Library) graphql.Marshaler {
+			return ec.marshalNLibrary2ᚕᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐLibraryᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Libraries_items(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Libraries",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Library(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Libraries_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.Libraries) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Libraries_pageInfo(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PageInfo, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+			return ec.marshalNPageInfo2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐPageInfo(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Libraries_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Libraries",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PageInfo(ctx, field)
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Library_id(ctx context.Context, field graphql.CollectedField, obj *v1.Library) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
@@ -794,6 +945,75 @@ func (ec *executionContext) fieldContext_Mutation_deleteLibrary(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _PageInfo_total(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PageInfo_total(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Total, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PageInfo_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PageInfo", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _PageInfo_HasNext(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PageInfo_HasNext(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.HasNext, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PageInfo_HasNext(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PageInfo", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _PageInfo_HasPrev(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PageInfo_HasPrev(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.HasPrev, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PageInfo_HasPrev(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PageInfo", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
 func (ec *executionContext) _Query_library(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -847,25 +1067,37 @@ func (ec *executionContext) _Query_libraries(ctx context.Context, field graphql.
 			return ec.fieldContext_Query_libraries(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Query().Libraries(ctx)
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Libraries(ctx, fc.Args["pageParams"].(*model.PageParams))
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []*v1.Library) graphql.Marshaler {
-			return ec.marshalNLibrary2ᚕᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐLibraryᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Libraries) graphql.Marshaler {
+			return ec.marshalNLibraries2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐLibraries(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Query_libraries(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_libraries(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Library(ctx, field)
+			return ec.childFields_Libraries(ctx, field)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_libraries_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -2042,6 +2274,43 @@ func (ec *executionContext) unmarshalInputCreateLibraryRequest(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPageParams(ctx context.Context, obj any) (model.PageParams, error) {
+	var it model.PageParams
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"page", "pageSize"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "page":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Page = data
+		case "pageSize":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageSize"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PageSize = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateLibraryRequest(ctx context.Context, obj any) (v1.UpdateLibraryRequest, error) {
 	var it v1.UpdateLibraryRequest
 	if obj == nil {
@@ -2086,6 +2355,49 @@ func (ec *executionContext) unmarshalInputUpdateLibraryRequest(ctx context.Conte
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var librariesImplementors = []string{"Libraries"}
+
+func (ec *executionContext) _Libraries(ctx context.Context, sel ast.SelectionSet, obj *model.Libraries) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, librariesImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Libraries")
+		case "items":
+			out.Values[i] = ec._Libraries_items(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._Libraries_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
 
 var libraryImplementors = []string{"Library"}
 
@@ -2183,6 +2495,54 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteLibrary(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var pageInfoImplementors = []string{"PageInfo"}
+
+func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *model.PageInfo) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pageInfoImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PageInfo")
+		case "total":
+			out.Values[i] = ec._PageInfo_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "HasNext":
+			out.Values[i] = ec._PageInfo_HasNext(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "HasPrev":
+			out.Values[i] = ec._PageInfo_HasPrev(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -2735,6 +3095,36 @@ func (ec *executionContext) marshalNID2uint(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2int32(ctx context.Context, v any) (int32, error) {
+	res, err := graphql.UnmarshalInt32(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.SelectionSet, v int32) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalInt32(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalNLibraries2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐLibraries(ctx context.Context, sel ast.SelectionSet, v model.Libraries) graphql.Marshaler {
+	return ec._Libraries(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNLibraries2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐLibraries(ctx context.Context, sel ast.SelectionSet, v *model.Libraries) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Libraries(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNLibrary2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐLibrary(ctx context.Context, sel ast.SelectionSet, v v1.Library) graphql.Marshaler {
 	return ec._Library(ctx, sel, &v)
 }
@@ -2763,6 +3153,16 @@ func (ec *executionContext) marshalNLibrary2ᚖgithubᚗcomᚋredish101ᚋdeposi
 		return graphql.Null
 	}
 	return ec._Library(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PageInfo(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
@@ -2977,6 +3377,14 @@ func (ec *executionContext) marshalOLibrary2ᚖgithubᚗcomᚋredish101ᚋdeposi
 		return graphql.Null
 	}
 	return ec._Library(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOPageParams2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐPageParams(ctx context.Context, v any) (*model.PageParams, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPageParams(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {

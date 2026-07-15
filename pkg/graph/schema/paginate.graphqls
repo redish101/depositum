@@ -1,0 +1,10 @@
+type PageInfo {
+    total: Int!
+    HasNext: Boolean!
+    HasPrev: Boolean!
+}
+
+input PageParams {
+    page: Int!
+    pageSize: Int!
+}

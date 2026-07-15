@@ -2,7 +2,27 @@
 
 package model
 
+import (
+	v1 "github.com/redish101/depositum/pkg/api/v1"
+)
+
+type Libraries struct {
+	Items    []*v1.Library `json:"items"`
+	PageInfo *PageInfo     `json:"pageInfo"`
+}
+
 type Mutation struct {
+}
+
+type PageInfo struct {
+	Total   int32 `json:"total"`
+	HasNext bool  `json:"HasNext"`
+	HasPrev bool  `json:"HasPrev"`
+}
+
+type PageParams struct {
+	Page     int32 `json:"page"`
+	PageSize int32 `json:"pageSize"`
 }
 
 type Query struct {

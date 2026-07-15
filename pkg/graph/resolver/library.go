@@ -10,6 +10,7 @@ import (
 
 	v1 "github.com/redish101/depositum/pkg/api/v1"
 	"github.com/redish101/depositum/pkg/graph"
+	"github.com/redish101/depositum/pkg/graph/model"
 )
 
 // CreateLibrary is the resolver for the createLibrary field.
@@ -52,22 +53,16 @@ func (r *queryResolver) Library(ctx context.Context, id uint) (*v1.Library, erro
 }
 
 // Libraries is the resolver for the libraries field.
-func (r *queryResolver) Libraries(ctx context.Context) ([]*v1.Library, error) {
-	libraries, err := r.libraryService.List(ctx, &v1.PaginationParams{
-		Page:     1,
-		PageSize: 1000, // TODO: 真正的分页
-	})
+func (r *queryResolver) Libraries(ctx context.Context, pageParams *model.PageParams) (*model.Libraries, error) {
+	libraries, err := r.libraryService.List(ctx, covertPageParams(pageParams))
 	if err != nil {
 		return nil, err
 	}
 
-	var resp []*v1.Library
-
-	for _, library := range libraries.Items {
-		resp = append(resp, &library)
-	}
-
-	return resp, err
+	return &model.Libraries{
+		Items:    libraries.Items,
+		PageInfo: pageInfo(libraries),
+	}, err
 }
 
 // Mutation returns graph.MutationResolver implementation.
