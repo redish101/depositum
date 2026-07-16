@@ -7,7 +7,9 @@ package resolver
 
 import (
 	"context"
+	"errors"
 
+	"github.com/redish101/depositum/internal/service"
 	v1 "github.com/redish101/depositum/pkg/api/v1"
 	"github.com/redish101/depositum/pkg/graph"
 	"github.com/redish101/depositum/pkg/graph/model"
@@ -45,7 +47,11 @@ func (r *queryResolver) Shelves(ctx context.Context, pageParams *model.PageParam
 
 // Library is the resolver for the library field.
 func (r *shelfResolver) Library(ctx context.Context, obj *v1.Shelf) (*v1.Library, error) {
-	return r.libraryService.Get(ctx, obj.LibraryID)
+	library, err := r.libraryService.Get(ctx, obj.LibraryID)
+	if errors.Is(err, service.ErrLibraryNotFound) {
+		return nil, nil
+	}
+	return library, err
 }
 
 // Shelf returns graph.ShelfResolver implementation.

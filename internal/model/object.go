@@ -1,9 +1,12 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	v1 "github.com/redish101/depositum/pkg/api/v1"
+	"gorm.io/gorm"
+)
 
 type ObjectStatus struct {
-	Phase     string
+	Phase     v1.ObjectPhase
 	LibraryID uint
 	ShelfID   uint
 }

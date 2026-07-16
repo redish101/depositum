@@ -12,7 +12,7 @@ import (
 )
 
 type ObjectService interface {
-	List(ctx context.Context, pageParams *v1.PaginationParams, listParams *v1.ListObjectRequest) (*v1.PaginationResponse[v1.Object], error)
+	List(ctx context.Context, pageParams *v1.PaginationParams, listParams *v1.ListObjectRequest) (*v1.PaginationResponse[*v1.Object], error)
 	Get(ctx context.Context, id uint) (*v1.Object, error)
 	Create(ctx context.Context, request *v1.CreateObjectRequest) (*v1.Object, error)
 	Update(ctx context.Context, id uint, request *v1.UpdateObjectRequest) (*v1.Object, error)
@@ -37,7 +37,7 @@ func NewObjectService(db *gorm.DB, libraryService LibraryService, shelfService S
 	return &objectService{db: db, libraryService: libraryService, shelfService: shelfService}
 }
 
-func (s *objectService) List(ctx context.Context, pageParams *v1.PaginationParams, listParams *v1.ListObjectRequest) (*v1.PaginationResponse[v1.Object], error) {
+func (s *objectService) List(ctx context.Context, pageParams *v1.PaginationParams, listParams *v1.ListObjectRequest) (*v1.PaginationResponse[*v1.Object], error) {
 	if listParams.SyncedOnly && listParams.UnsyncedOnly {
 		return nil, ErrInvalidListObjectsParams
 	}
@@ -68,9 +68,9 @@ func (s *objectService) List(ctx context.Context, pageParams *v1.PaginationParam
 		return nil, err
 	}
 
-	resp := make([]v1.Object, len(objects.Items))
+	resp := make([]*v1.Object, len(objects.Items))
 	for i, obj := range objects.Items {
-		resp[i] = v1.Object{
+		resp[i] = &v1.Object{
 			ID:            obj.ID,
 			CreatedAt:     obj.CreatedAt,
 			UpdatedAt:     obj.UpdatedAt,
@@ -82,7 +82,7 @@ func (s *objectService) List(ctx context.Context, pageParams *v1.PaginationParam
 		}
 	}
 
-	return &v1.PaginationResponse[v1.Object]{
+	return &v1.PaginationResponse[*v1.Object]{
 		Items:      resp,
 		Page:       objects.Page,
 		PageSize:   objects.PageSize,
@@ -167,6 +167,9 @@ func (s *objectService) Create(ctx context.Context, request *v1.CreateObjectRequ
 		Name:          request.Name,
 		Description:   request.Description,
 		DesiredStatus: model.ObjectStatus(request.DesiredStatus),
+		CurrentStatus: model.ObjectStatus{
+			Phase: v1.ObjectPhaseCreated,
+		},
 	}
 
 	if request.SyncNow {
@@ -222,6 +225,10 @@ func (s *objectService) Update(ctx context.Context, id uint, request *v1.UpdateO
 			return nil, err
 		}
 		obj.CurrentStatus = model.ObjectStatus(*request.CurrentStatus)
+	}
+
+	if request.SyncNow != nil && *request.SyncNow {
+		obj.CurrentStatus = obj.DesiredStatus
 	}
 
 	writeSyncStatus(&obj)

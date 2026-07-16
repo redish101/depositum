@@ -8,18 +8,20 @@ type ObjectOperation struct {
 	Date   time.Time
 }
 
+type ObjectPhase string
+
 const (
-	ObjectPhaseCreated   = "created"
-	ObjectPhaseArchived  = "archived"
-	ObjectPhaseWithdrawn = "withdrawn"
-	ObjectPhaseDeleted   = "deleted"
-	ObjectPhaseLost      = "lost"
+	ObjectPhaseCreated   ObjectPhase = "CREATED"
+	ObjectPhaseArchived  ObjectPhase = "ARCHIEVED"
+	ObjectPhaseWithdrawn ObjectPhase = "WITHDRAWN"
+	ObjectPhaseDeleted   ObjectPhase = "DELETED"
+	ObjectPhaseLost      ObjectPhase = "LOST"
 )
 
 type ObjectStatus struct {
-	Phase     string `json:"phase"`
-	LibraryID uint   `json:"libraryID"`
-	ShelfID   uint   `json:"shelfID"`
+	Phase     ObjectPhase `json:"phase"`
+	LibraryID uint        `json:"libraryID"`
+	ShelfID   uint        `json:"shelfID"`
 }
 
 type Object struct {
@@ -54,4 +56,5 @@ type UpdateObjectRequest struct {
 	Description   *string       `json:"description" validate:"omitempty"`
 	CurrentStatus *ObjectStatus `json:"currentStatus" validate:"omitempty"`
 	DesiredStatus *ObjectStatus `json:"desiredStatus" validate:"omitempty"`
+	SyncNow       *bool         `json:"syncnow" validate:"omitempty"`
 }

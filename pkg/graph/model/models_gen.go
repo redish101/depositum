@@ -14,6 +14,17 @@ type Libraries struct {
 type Mutation struct {
 }
 
+type ObjectStatusInput struct {
+	Phase     v1.ObjectPhase `json:"phase"`
+	LibraryID *uint          `json:"libraryID,omitempty"`
+	ShelfID   *uint          `json:"shelfID,omitempty"`
+}
+
+type Objects struct {
+	Items    []*v1.Object `json:"items"`
+	PageInfo *PageInfo    `json:"pageInfo"`
+}
+
 type PageInfo struct {
 	Total   int32 `json:"total"`
 	HasNext bool  `json:"HasNext"`

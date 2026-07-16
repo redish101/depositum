@@ -32,8 +32,11 @@ type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
 	Mutation() MutationResolver
+	ObjectStatus() ObjectStatusResolver
 	Query() QueryResolver
 	Shelf() ShelfResolver
+	CreateObjectRequest() CreateObjectRequestResolver
+	UpdateObjectRequest() UpdateObjectRequestResolver
 }
 
 type DirectiveRoot struct {
@@ -55,11 +58,37 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateLibrary func(childComplexity int, input v1.CreateLibraryRequest) int
+		CreateObject  func(childComplexity int, input v1.CreateObjectRequest) int
 		CreateShelf   func(childComplexity int, input v1.CreateShelfRequest) int
 		DeleteLibrary func(childComplexity int, id uint) int
+		DeleteObject  func(childComplexity int, id uint) int
 		DeleteShelf   func(childComplexity int, id uint) int
+		Sync          func(childComplexity int, id uint) int
 		UpdateLibrary func(childComplexity int, id uint, input v1.UpdateLibraryRequest) int
+		UpdateObject  func(childComplexity int, id uint, input v1.UpdateObjectRequest) int
 		UpdateShelf   func(childComplexity int, id uint, input v1.UpdateShelfRequest) int
+	}
+
+	Object struct {
+		CreatedAt     func(childComplexity int) int
+		CurrentStatus func(childComplexity int) int
+		Description   func(childComplexity int) int
+		DesiredStatus func(childComplexity int) int
+		ID            func(childComplexity int) int
+		Name          func(childComplexity int) int
+		Synced        func(childComplexity int) int
+		UpdatedAt     func(childComplexity int) int
+	}
+
+	ObjectStatus struct {
+		Library func(childComplexity int) int
+		Phase   func(childComplexity int) int
+		Shelf   func(childComplexity int) int
+	}
+
+	Objects struct {
+		Items    func(childComplexity int) int
+		PageInfo func(childComplexity int) int
 	}
 
 	PageInfo struct {
@@ -71,6 +100,8 @@ type ComplexityRoot struct {
 	Query struct {
 		Libraries func(childComplexity int, pageParams *model.PageParams) int
 		Library   func(childComplexity int, id uint) int
+		Object    func(childComplexity int, id uint) int
+		Objects   func(childComplexity int, input *v1.ListObjectRequest, pageParams *model.PageParams) int
 		Shelf     func(childComplexity int, id uint) int
 		Shelves   func(childComplexity int, pageParams *model.PageParams) int
 	}
@@ -98,18 +129,35 @@ type MutationResolver interface {
 	CreateLibrary(ctx context.Context, input v1.CreateLibraryRequest) (*v1.Library, error)
 	UpdateLibrary(ctx context.Context, id uint, input v1.UpdateLibraryRequest) (*v1.Library, error)
 	DeleteLibrary(ctx context.Context, id uint) (bool, error)
+	CreateObject(ctx context.Context, input v1.CreateObjectRequest) (*v1.Object, error)
+	UpdateObject(ctx context.Context, id uint, input v1.UpdateObjectRequest) (*v1.Object, error)
+	DeleteObject(ctx context.Context, id uint) (bool, error)
+	Sync(ctx context.Context, id uint) (*v1.Object, error)
 	CreateShelf(ctx context.Context, input v1.CreateShelfRequest) (*v1.Shelf, error)
 	UpdateShelf(ctx context.Context, id uint, input v1.UpdateShelfRequest) (*v1.Shelf, error)
 	DeleteShelf(ctx context.Context, id uint) (bool, error)
 }
+type ObjectStatusResolver interface {
+	Library(ctx context.Context, obj *v1.ObjectStatus) (*v1.Library, error)
+	Shelf(ctx context.Context, obj *v1.ObjectStatus) (*v1.Shelf, error)
+}
 type QueryResolver interface {
 	Library(ctx context.Context, id uint) (*v1.Library, error)
 	Libraries(ctx context.Context, pageParams *model.PageParams) (*model.Libraries, error)
+	Object(ctx context.Context, id uint) (*v1.Object, error)
+	Objects(ctx context.Context, input *v1.ListObjectRequest, pageParams *model.PageParams) (*model.Objects, error)
 	Shelf(ctx context.Context, id uint) (*v1.Shelf, error)
 	Shelves(ctx context.Context, pageParams *model.PageParams) (*model.Shelves, error)
 }
 type ShelfResolver interface {
 	Library(ctx context.Context, obj *v1.Shelf) (*v1.Library, error)
+}
+
+type CreateObjectRequestResolver interface {
+	DesiredStatus(ctx context.Context, obj *v1.CreateObjectRequest, data *model.ObjectStatusInput) error
+}
+type UpdateObjectRequestResolver interface {
+	DesiredStatus(ctx context.Context, obj *v1.UpdateObjectRequest, data *model.ObjectStatusInput) error
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -185,6 +233,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.CreateLibrary(childComplexity, args["input"].(v1.CreateLibraryRequest)), true
+	case "Mutation.createObject":
+		if e.ComplexityRoot.Mutation.CreateObject == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createObject_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateObject(childComplexity, args["input"].(v1.CreateObjectRequest)), true
 	case "Mutation.createShelf":
 		if e.ComplexityRoot.Mutation.CreateShelf == nil {
 			break
@@ -207,6 +266,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteLibrary(childComplexity, args["id"].(uint)), true
+	case "Mutation.deleteObject":
+		if e.ComplexityRoot.Mutation.DeleteObject == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteObject_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteObject(childComplexity, args["id"].(uint)), true
 	case "Mutation.deleteShelf":
 		if e.ComplexityRoot.Mutation.DeleteShelf == nil {
 			break
@@ -218,6 +288,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteShelf(childComplexity, args["id"].(uint)), true
+	case "Mutation.sync":
+		if e.ComplexityRoot.Mutation.Sync == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sync_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.Sync(childComplexity, args["id"].(uint)), true
 	case "Mutation.updateLibrary":
 		if e.ComplexityRoot.Mutation.UpdateLibrary == nil {
 			break
@@ -229,6 +310,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateLibrary(childComplexity, args["id"].(uint), args["input"].(v1.UpdateLibraryRequest)), true
+	case "Mutation.updateObject":
+		if e.ComplexityRoot.Mutation.UpdateObject == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateObject_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateObject(childComplexity, args["id"].(uint), args["input"].(v1.UpdateObjectRequest)), true
 	case "Mutation.updateShelf":
 		if e.ComplexityRoot.Mutation.UpdateShelf == nil {
 			break
@@ -240,6 +332,87 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateShelf(childComplexity, args["id"].(uint), args["input"].(v1.UpdateShelfRequest)), true
+
+	case "Object.createdAt":
+		if e.ComplexityRoot.Object.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Object.CreatedAt(childComplexity), true
+	case "Object.currentStatus":
+		if e.ComplexityRoot.Object.CurrentStatus == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Object.CurrentStatus(childComplexity), true
+	case "Object.description":
+		if e.ComplexityRoot.Object.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Object.Description(childComplexity), true
+	case "Object.desiredStatus":
+		if e.ComplexityRoot.Object.DesiredStatus == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Object.DesiredStatus(childComplexity), true
+	case "Object.id":
+		if e.ComplexityRoot.Object.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Object.ID(childComplexity), true
+	case "Object.name":
+		if e.ComplexityRoot.Object.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Object.Name(childComplexity), true
+	case "Object.synced":
+		if e.ComplexityRoot.Object.Synced == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Object.Synced(childComplexity), true
+	case "Object.updatedAt":
+		if e.ComplexityRoot.Object.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Object.UpdatedAt(childComplexity), true
+
+	case "ObjectStatus.library":
+		if e.ComplexityRoot.ObjectStatus.Library == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ObjectStatus.Library(childComplexity), true
+	case "ObjectStatus.phase":
+		if e.ComplexityRoot.ObjectStatus.Phase == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ObjectStatus.Phase(childComplexity), true
+	case "ObjectStatus.shelf":
+		if e.ComplexityRoot.ObjectStatus.Shelf == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ObjectStatus.Shelf(childComplexity), true
+
+	case "Objects.items":
+		if e.ComplexityRoot.Objects.Items == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Objects.Items(childComplexity), true
+	case "Objects.pageInfo":
+		if e.ComplexityRoot.Objects.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Objects.PageInfo(childComplexity), true
 
 	case "PageInfo.HasNext":
 		if e.ComplexityRoot.PageInfo.HasNext == nil {
@@ -282,6 +455,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Library(childComplexity, args["id"].(uint)), true
+	case "Query.object":
+		if e.ComplexityRoot.Query.Object == nil {
+			break
+		}
+
+		args, err := ec.field_Query_object_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Object(childComplexity, args["id"].(uint)), true
+	case "Query.objects":
+		if e.ComplexityRoot.Query.Objects == nil {
+			break
+		}
+
+		args, err := ec.field_Query_objects_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Objects(childComplexity, args["input"].(*v1.ListObjectRequest), args["pageParams"].(*model.PageParams)), true
 	case "Query.shelf":
 		if e.ComplexityRoot.Query.Shelf == nil {
 			break
@@ -364,9 +559,13 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateLibraryRequest,
+		ec.unmarshalInputCreateObjectRequest,
 		ec.unmarshalInputCreateShelfRequest,
+		ec.unmarshalInputListObjectRequest,
+		ec.unmarshalInputObjectStatusInput,
 		ec.unmarshalInputPageParams,
 		ec.unmarshalInputUpdateLibraryRequest,
+		ec.unmarshalInputUpdateObjectRequest,
 		ec.unmarshalInputUpdateShelfRequest,
 	)
 	first := true
@@ -442,7 +641,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/library.graphqls" "schema/paginate.graphqls" "schema/shelf.graphqls"
+//go:embed "schema/library.graphqls" "schema/object.graphqls" "schema/paginate.graphqls" "schema/shelf.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -455,6 +654,7 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "schema/library.graphqls", Input: sourceData("schema/library.graphqls"), BuiltIn: false},
+	{Name: "schema/object.graphqls", Input: sourceData("schema/object.graphqls"), BuiltIn: false},
 	{Name: "schema/paginate.graphqls", Input: sourceData("schema/paginate.graphqls"), BuiltIn: false},
 	{Name: "schema/shelf.graphqls", Input: sourceData("schema/shelf.graphqls"), BuiltIn: false},
 }
@@ -488,6 +688,50 @@ func (ec *executionContext) childFields_Library(ctx context.Context, field graph
 		return ec.fieldContext_Library_address(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Library", field.Name)
+}
+
+func (ec *executionContext) childFields_Object(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Object_id(ctx, field)
+	case "createdAt":
+		return ec.fieldContext_Object_createdAt(ctx, field)
+	case "updatedAt":
+		return ec.fieldContext_Object_updatedAt(ctx, field)
+	case "name":
+		return ec.fieldContext_Object_name(ctx, field)
+	case "description":
+		return ec.fieldContext_Object_description(ctx, field)
+	case "desiredStatus":
+		return ec.fieldContext_Object_desiredStatus(ctx, field)
+	case "currentStatus":
+		return ec.fieldContext_Object_currentStatus(ctx, field)
+	case "synced":
+		return ec.fieldContext_Object_synced(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Object", field.Name)
+}
+
+func (ec *executionContext) childFields_ObjectStatus(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "phase":
+		return ec.fieldContext_ObjectStatus_phase(ctx, field)
+	case "library":
+		return ec.fieldContext_ObjectStatus_library(ctx, field)
+	case "shelf":
+		return ec.fieldContext_ObjectStatus_shelf(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ObjectStatus", field.Name)
+}
+
+func (ec *executionContext) childFields_Objects(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "items":
+		return ec.fieldContext_Objects_items(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_Objects_pageInfo(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Objects", field.Name)
 }
 
 func (ec *executionContext) childFields_PageInfo(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -660,6 +904,20 @@ func (ec *executionContext) field_Mutation_createLibrary_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createObject_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (v1.CreateObjectRequest, error) {
+			return ec.unmarshalNCreateObjectRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐCreateObjectRequest(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createShelf_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -688,7 +946,35 @@ func (ec *executionContext) field_Mutation_deleteLibrary_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_deleteObject_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (uint, error) {
+			return ec.unmarshalNID2uint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_deleteShelf_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (uint, error) {
+			return ec.unmarshalNID2uint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_sync_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
@@ -716,6 +1002,28 @@ func (ec *executionContext) field_Mutation_updateLibrary_args(ctx context.Contex
 	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
 		func(ctx context.Context, v any) (v1.UpdateLibraryRequest, error) {
 			return ec.unmarshalNUpdateLibraryRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐUpdateLibraryRequest(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateObject_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (uint, error) {
+			return ec.unmarshalNID2uint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (v1.UpdateObjectRequest, error) {
+			return ec.unmarshalNUpdateObjectRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐUpdateObjectRequest(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -785,6 +1093,42 @@ func (ec *executionContext) field_Query_library_args(ctx context.Context, rawArg
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_object_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (uint, error) {
+			return ec.unmarshalNID2uint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_objects_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (*v1.ListObjectRequest, error) {
+			return ec.unmarshalOListObjectRequest2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐListObjectRequest(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "pageParams",
+		func(ctx context.Context, v any) (*model.PageParams, error) {
+			return ec.unmarshalOPageParams2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐPageParams(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["pageParams"] = arg1
 	return args, nil
 }
 
@@ -1187,6 +1531,182 @@ func (ec *executionContext) fieldContext_Mutation_deleteLibrary(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createObject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_createObject(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CreateObject(ctx, fc.Args["input"].(v1.CreateObjectRequest))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *v1.Object) graphql.Marshaler {
+			return ec.marshalNObject2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObject(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_createObject(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Object(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createObject_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateObject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_updateObject(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UpdateObject(ctx, fc.Args["id"].(uint), fc.Args["input"].(v1.UpdateObjectRequest))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *v1.Object) graphql.Marshaler {
+			return ec.marshalNObject2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObject(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_updateObject(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Object(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateObject_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteObject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_deleteObject(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().DeleteObject(ctx, fc.Args["id"].(uint))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_deleteObject(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteObject_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_sync(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_sync(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().Sync(ctx, fc.Args["id"].(uint))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *v1.Object) graphql.Marshaler {
+			return ec.marshalNObject2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObject(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_sync(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Object(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_sync_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createShelf(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1315,6 +1835,359 @@ func (ec *executionContext) fieldContext_Mutation_deleteShelf(ctx context.Contex
 	if fc.Args, err = ec.field_Mutation_deleteShelf_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Object_id(ctx context.Context, field graphql.CollectedField, obj *v1.Object) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Object_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v uint) graphql.Marshaler {
+			return ec.marshalNID2uint(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Object_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Object", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Object_createdAt(ctx context.Context, field graphql.CollectedField, obj *v1.Object) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Object_createdAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Object_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Object", field, false, false, errors.New("field of type Time does not have child fields"))
+}
+
+func (ec *executionContext) _Object_updatedAt(ctx context.Context, field graphql.CollectedField, obj *v1.Object) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Object_updatedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.UpdatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Object_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Object", field, false, false, errors.New("field of type Time does not have child fields"))
+}
+
+func (ec *executionContext) _Object_name(ctx context.Context, field graphql.CollectedField, obj *v1.Object) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Object_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Object_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Object", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Object_description(ctx context.Context, field graphql.CollectedField, obj *v1.Object) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Object_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalOString2string(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Object_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Object", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Object_desiredStatus(ctx context.Context, field graphql.CollectedField, obj *v1.Object) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Object_desiredStatus(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.DesiredStatus, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v v1.ObjectStatus) graphql.Marshaler {
+			return ec.marshalNObjectStatus2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObjectStatus(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Object_desiredStatus(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Object",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ObjectStatus(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Object_currentStatus(ctx context.Context, field graphql.CollectedField, obj *v1.Object) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Object_currentStatus(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CurrentStatus, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v v1.ObjectStatus) graphql.Marshaler {
+			return ec.marshalNObjectStatus2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObjectStatus(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Object_currentStatus(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Object",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ObjectStatus(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Object_synced(ctx context.Context, field graphql.CollectedField, obj *v1.Object) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Object_synced(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Synced, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Object_synced(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Object", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _ObjectStatus_phase(ctx context.Context, field graphql.CollectedField, obj *v1.ObjectStatus) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ObjectStatus_phase(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Phase, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v v1.ObjectPhase) graphql.Marshaler {
+			return ec.marshalNObjectPhase2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObjectPhase(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ObjectStatus_phase(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ObjectStatus", field, false, false, errors.New("field of type ObjectPhase does not have child fields"))
+}
+
+func (ec *executionContext) _ObjectStatus_library(ctx context.Context, field graphql.CollectedField, obj *v1.ObjectStatus) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ObjectStatus_library(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.ObjectStatus().Library(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *v1.Library) graphql.Marshaler {
+			return ec.marshalOLibrary2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐLibrary(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ObjectStatus_library(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ObjectStatus",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Library(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ObjectStatus_shelf(ctx context.Context, field graphql.CollectedField, obj *v1.ObjectStatus) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ObjectStatus_shelf(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.ObjectStatus().Shelf(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *v1.Shelf) graphql.Marshaler {
+			return ec.marshalOShelf2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐShelf(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ObjectStatus_shelf(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ObjectStatus",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Shelf(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Objects_items(ctx context.Context, field graphql.CollectedField, obj *model.Objects) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Objects_items(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Items, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*v1.Object) graphql.Marshaler {
+			return ec.marshalNObject2ᚕᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObjectᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Objects_items(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Objects",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Object(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Objects_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.Objects) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Objects_pageInfo(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PageInfo, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+			return ec.marshalNPageInfo2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐPageInfo(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Objects_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Objects",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PageInfo(ctx, field)
+		},
 	}
 	return fc, nil
 }
@@ -1470,6 +2343,94 @@ func (ec *executionContext) fieldContext_Query_libraries(ctx context.Context, fi
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_libraries_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_object(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_object(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Object(ctx, fc.Args["id"].(uint))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *v1.Object) graphql.Marshaler {
+			return ec.marshalOObject2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObject(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Query_object(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Object(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_object_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_objects(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_objects(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Objects(ctx, fc.Args["input"].(*v1.ListObjectRequest), fc.Args["pageParams"].(*model.PageParams))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Objects) graphql.Marshaler {
+			return ec.marshalNObjects2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐObjects(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_objects(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Objects(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_objects_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2947,6 +3908,59 @@ func (ec *executionContext) unmarshalInputCreateLibraryRequest(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateObjectRequest(ctx context.Context, obj any) (v1.CreateObjectRequest, error) {
+	var it v1.CreateObjectRequest
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "description", "desiredStatus", "syncNow"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "desiredStatus":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("desiredStatus"))
+			data, err := ec.unmarshalNObjectStatusInput2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐObjectStatusInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.Resolvers.CreateObjectRequest().DesiredStatus(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "syncNow":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("syncNow"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SyncNow = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateShelfRequest(ctx context.Context, obj any) (v1.CreateShelfRequest, error) {
 	var it v1.CreateShelfRequest
 	if obj == nil {
@@ -2986,6 +4000,101 @@ func (ec *executionContext) unmarshalInputCreateShelfRequest(ctx context.Context
 				return it, err
 			}
 			it.LibraryID = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListObjectRequest(ctx context.Context, obj any) (v1.ListObjectRequest, error) {
+	var it v1.ListObjectRequest
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"syncedOnly", "unsyncedOnly", "libraryID", "shelfID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "syncedOnly":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("syncedOnly"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SyncedOnly = data
+		case "unsyncedOnly":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unsyncedOnly"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UnsyncedOnly = data
+		case "libraryID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("libraryID"))
+			data, err := ec.unmarshalOID2ᚖuint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LibraryID = data
+		case "shelfID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shelfID"))
+			data, err := ec.unmarshalOID2ᚖuint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ShelfID = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputObjectStatusInput(ctx context.Context, obj any) (model.ObjectStatusInput, error) {
+	var it model.ObjectStatusInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"phase", "libraryID", "shelfID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "phase":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phase"))
+			data, err := ec.unmarshalNObjectPhase2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObjectPhase(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Phase = data
+		case "libraryID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("libraryID"))
+			data, err := ec.unmarshalOID2ᚖuint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LibraryID = data
+		case "shelfID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shelfID"))
+			data, err := ec.unmarshalOID2ᚖuint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ShelfID = data
 		}
 	}
 	return it, nil
@@ -3060,6 +4169,59 @@ func (ec *executionContext) unmarshalInputUpdateLibraryRequest(ctx context.Conte
 				return it, err
 			}
 			it.Address = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateObjectRequest(ctx context.Context, obj any) (v1.UpdateObjectRequest, error) {
+	var it v1.UpdateObjectRequest
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "description", "desiredStatus", "syncNow"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "desiredStatus":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("desiredStatus"))
+			data, err := ec.unmarshalOObjectStatusInput2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐObjectStatusInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.Resolvers.UpdateObjectRequest().DesiredStatus(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "syncNow":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("syncNow"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SyncNow = data
 		}
 	}
 	return it, nil
@@ -3259,6 +4421,34 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "createObject":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createObject(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateObject":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateObject(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteObject":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteObject(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sync":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sync(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createShelf":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createShelf(ctx, field)
@@ -3277,6 +4467,236 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteShelf(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var objectImplementors = []string{"Object"}
+
+func (ec *executionContext) _Object(ctx context.Context, sel ast.SelectionSet, obj *v1.Object) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, objectImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Object")
+		case "id":
+			out.Values[i] = ec._Object_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._Object_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._Object_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Object_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._Object_description(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "desiredStatus":
+			out.Values[i] = ec._Object_desiredStatus(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "currentStatus":
+			out.Values[i] = ec._Object_currentStatus(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "synced":
+			out.Values[i] = ec._Object_synced(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var objectStatusImplementors = []string{"ObjectStatus"}
+
+func (ec *executionContext) _ObjectStatus(ctx context.Context, sel ast.SelectionSet, obj *v1.ObjectStatus) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, objectStatusImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ObjectStatus")
+		case "phase":
+			out.Values[i] = ec._ObjectStatus_phase(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "library":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ObjectStatus_library(ctx, field, obj)
+				if res == graphql.RequiredNull {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "shelf":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ObjectStatus_shelf(ctx, field, obj)
+				if res == graphql.RequiredNull {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var objectsImplementors = []string{"Objects"}
+
+func (ec *executionContext) _Objects(ctx context.Context, sel ast.SelectionSet, obj *model.Objects) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, objectsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Objects")
+		case "items":
+			out.Values[i] = ec._Objects_items(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._Objects_pageInfo(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -3401,6 +4821,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_libraries(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "object":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_object(ctx, field)
+				if res == graphql.RequiredNull {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "objects":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_objects(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4044,6 +5508,11 @@ func (ec *executionContext) unmarshalNCreateLibraryRequest2githubᚗcomᚋredish
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateObjectRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐCreateObjectRequest(ctx context.Context, v any) (v1.CreateObjectRequest, error) {
+	res, err := ec.unmarshalInputCreateObjectRequest(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateShelfRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐCreateShelfRequest(ctx context.Context, v any) (v1.CreateShelfRequest, error) {
 	res, err := ec.unmarshalInputCreateShelfRequest(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4123,6 +5592,81 @@ func (ec *executionContext) marshalNLibrary2ᚖgithubᚗcomᚋredish101ᚋdeposi
 		return graphql.Null
 	}
 	return ec._Library(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNObject2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObject(ctx context.Context, sel ast.SelectionSet, v v1.Object) graphql.Marshaler {
+	return ec._Object(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNObject2ᚕᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObjectᚄ(ctx context.Context, sel ast.SelectionSet, v []*v1.Object) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNObject2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObject(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNObject2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObject(ctx context.Context, sel ast.SelectionSet, v *v1.Object) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Object(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNObjectPhase2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObjectPhase(ctx context.Context, v any) (v1.ObjectPhase, error) {
+	tmp, err := graphql.UnmarshalString(v)
+	res := v1.ObjectPhase(tmp)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNObjectPhase2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObjectPhase(ctx context.Context, sel ast.SelectionSet, v v1.ObjectPhase) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalString(string(v))
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalNObjectStatus2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObjectStatus(ctx context.Context, sel ast.SelectionSet, v v1.ObjectStatus) graphql.Marshaler {
+	return ec._ObjectStatus(ctx, sel, &v)
+}
+
+func (ec *executionContext) unmarshalNObjectStatusInput2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐObjectStatusInput(ctx context.Context, v any) (model.ObjectStatusInput, error) {
+	res, err := ec.unmarshalInputObjectStatusInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNObjectStatusInput2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐObjectStatusInput(ctx context.Context, v any) (*model.ObjectStatusInput, error) {
+	res, err := ec.unmarshalInputObjectStatusInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNObjects2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐObjects(ctx context.Context, sel ast.SelectionSet, v model.Objects) graphql.Marshaler {
+	return ec._Objects(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNObjects2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐObjects(ctx context.Context, sel ast.SelectionSet, v *model.Objects) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Objects(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
@@ -4213,6 +5757,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 
 func (ec *executionContext) unmarshalNUpdateLibraryRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐUpdateLibraryRequest(ctx context.Context, v any) (v1.UpdateLibraryRequest, error) {
 	res, err := ec.unmarshalInputUpdateLibraryRequest(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateObjectRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐUpdateObjectRequest(ctx context.Context, v any) (v1.UpdateObjectRequest, error) {
+	res, err := ec.unmarshalInputUpdateObjectRequest(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -4414,6 +5963,29 @@ func (ec *executionContext) marshalOLibrary2ᚖgithubᚗcomᚋredish101ᚋdeposi
 		return graphql.Null
 	}
 	return ec._Library(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOListObjectRequest2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐListObjectRequest(ctx context.Context, v any) (*v1.ListObjectRequest, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputListObjectRequest(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOObject2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐObject(ctx context.Context, sel ast.SelectionSet, v *v1.Object) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Object(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOObjectStatusInput2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐObjectStatusInput(ctx context.Context, v any) (*model.ObjectStatusInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputObjectStatusInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOPageParams2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐPageParams(ctx context.Context, v any) (*model.PageParams, error) {
