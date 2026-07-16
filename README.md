@@ -6,7 +6,7 @@
 
 ## API
 
-depositum 提供 HTTP Restful API 与 GraphQL（以后者为主）。
+depositum 提供 HTTP Restful API 与 GraphQL。
 
 ### Restful
 

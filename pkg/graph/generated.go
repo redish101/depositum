@@ -33,6 +33,7 @@ type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Shelf() ShelfResolver
 }
 
 type DirectiveRoot struct {
@@ -54,8 +55,11 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateLibrary func(childComplexity int, input v1.CreateLibraryRequest) int
+		CreateShelf   func(childComplexity int, input v1.CreateShelfRequest) int
 		DeleteLibrary func(childComplexity int, id uint) int
+		DeleteShelf   func(childComplexity int, id uint) int
 		UpdateLibrary func(childComplexity int, id uint, input v1.UpdateLibraryRequest) int
+		UpdateShelf   func(childComplexity int, id uint, input v1.UpdateShelfRequest) int
 	}
 
 	PageInfo struct {
@@ -67,6 +71,22 @@ type ComplexityRoot struct {
 	Query struct {
 		Libraries func(childComplexity int, pageParams *model.PageParams) int
 		Library   func(childComplexity int, id uint) int
+		Shelf     func(childComplexity int, id uint) int
+		Shelves   func(childComplexity int, pageParams *model.PageParams) int
+	}
+
+	Shelf struct {
+		CreatedAt   func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Library     func(childComplexity int) int
+		Name        func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
+	}
+
+	Shelves struct {
+		Items    func(childComplexity int) int
+		PageInfo func(childComplexity int) int
 	}
 }
 
@@ -78,10 +98,18 @@ type MutationResolver interface {
 	CreateLibrary(ctx context.Context, input v1.CreateLibraryRequest) (*v1.Library, error)
 	UpdateLibrary(ctx context.Context, id uint, input v1.UpdateLibraryRequest) (*v1.Library, error)
 	DeleteLibrary(ctx context.Context, id uint) (bool, error)
+	CreateShelf(ctx context.Context, input v1.CreateShelfRequest) (*v1.Shelf, error)
+	UpdateShelf(ctx context.Context, id uint, input v1.UpdateShelfRequest) (*v1.Shelf, error)
+	DeleteShelf(ctx context.Context, id uint) (bool, error)
 }
 type QueryResolver interface {
 	Library(ctx context.Context, id uint) (*v1.Library, error)
 	Libraries(ctx context.Context, pageParams *model.PageParams) (*model.Libraries, error)
+	Shelf(ctx context.Context, id uint) (*v1.Shelf, error)
+	Shelves(ctx context.Context, pageParams *model.PageParams) (*model.Shelves, error)
+}
+type ShelfResolver interface {
+	Library(ctx context.Context, obj *v1.Shelf) (*v1.Library, error)
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -157,6 +185,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.CreateLibrary(childComplexity, args["input"].(v1.CreateLibraryRequest)), true
+	case "Mutation.createShelf":
+		if e.ComplexityRoot.Mutation.CreateShelf == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createShelf_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateShelf(childComplexity, args["input"].(v1.CreateShelfRequest)), true
 	case "Mutation.deleteLibrary":
 		if e.ComplexityRoot.Mutation.DeleteLibrary == nil {
 			break
@@ -168,6 +207,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteLibrary(childComplexity, args["id"].(uint)), true
+	case "Mutation.deleteShelf":
+		if e.ComplexityRoot.Mutation.DeleteShelf == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteShelf_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteShelf(childComplexity, args["id"].(uint)), true
 	case "Mutation.updateLibrary":
 		if e.ComplexityRoot.Mutation.UpdateLibrary == nil {
 			break
@@ -179,6 +229,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateLibrary(childComplexity, args["id"].(uint), args["input"].(v1.UpdateLibraryRequest)), true
+	case "Mutation.updateShelf":
+		if e.ComplexityRoot.Mutation.UpdateShelf == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateShelf_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateShelf(childComplexity, args["id"].(uint), args["input"].(v1.UpdateShelfRequest)), true
 
 	case "PageInfo.HasNext":
 		if e.ComplexityRoot.PageInfo.HasNext == nil {
@@ -221,6 +282,78 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Library(childComplexity, args["id"].(uint)), true
+	case "Query.shelf":
+		if e.ComplexityRoot.Query.Shelf == nil {
+			break
+		}
+
+		args, err := ec.field_Query_shelf_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Shelf(childComplexity, args["id"].(uint)), true
+	case "Query.shelves":
+		if e.ComplexityRoot.Query.Shelves == nil {
+			break
+		}
+
+		args, err := ec.field_Query_shelves_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Shelves(childComplexity, args["pageParams"].(*model.PageParams)), true
+
+	case "Shelf.createdAt":
+		if e.ComplexityRoot.Shelf.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Shelf.CreatedAt(childComplexity), true
+	case "Shelf.description":
+		if e.ComplexityRoot.Shelf.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Shelf.Description(childComplexity), true
+	case "Shelf.id":
+		if e.ComplexityRoot.Shelf.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Shelf.ID(childComplexity), true
+	case "Shelf.library":
+		if e.ComplexityRoot.Shelf.Library == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Shelf.Library(childComplexity), true
+	case "Shelf.name":
+		if e.ComplexityRoot.Shelf.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Shelf.Name(childComplexity), true
+	case "Shelf.updatedAt":
+		if e.ComplexityRoot.Shelf.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Shelf.UpdatedAt(childComplexity), true
+
+	case "Shelves.items":
+		if e.ComplexityRoot.Shelves.Items == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Shelves.Items(childComplexity), true
+	case "Shelves.pageInfo":
+		if e.ComplexityRoot.Shelves.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Shelves.PageInfo(childComplexity), true
 
 	}
 	return 0, false
@@ -231,8 +364,10 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateLibraryRequest,
+		ec.unmarshalInputCreateShelfRequest,
 		ec.unmarshalInputPageParams,
 		ec.unmarshalInputUpdateLibraryRequest,
+		ec.unmarshalInputUpdateShelfRequest,
 	)
 	first := true
 
@@ -307,7 +442,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/library.graphqls" "schema/paginate.graphqls"
+//go:embed "schema/library.graphqls" "schema/paginate.graphqls" "schema/shelf.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -321,6 +456,7 @@ func sourceData(filename string) string {
 var sources = []*ast.Source{
 	{Name: "schema/library.graphqls", Input: sourceData("schema/library.graphqls"), BuiltIn: false},
 	{Name: "schema/paginate.graphqls", Input: sourceData("schema/paginate.graphqls"), BuiltIn: false},
+	{Name: "schema/shelf.graphqls", Input: sourceData("schema/shelf.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -364,6 +500,34 @@ func (ec *executionContext) childFields_PageInfo(ctx context.Context, field grap
 		return ec.fieldContext_PageInfo_HasPrev(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+}
+
+func (ec *executionContext) childFields_Shelf(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Shelf_id(ctx, field)
+	case "createdAt":
+		return ec.fieldContext_Shelf_createdAt(ctx, field)
+	case "updatedAt":
+		return ec.fieldContext_Shelf_updatedAt(ctx, field)
+	case "name":
+		return ec.fieldContext_Shelf_name(ctx, field)
+	case "description":
+		return ec.fieldContext_Shelf_description(ctx, field)
+	case "library":
+		return ec.fieldContext_Shelf_library(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Shelf", field.Name)
+}
+
+func (ec *executionContext) childFields_Shelves(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "items":
+		return ec.fieldContext_Shelves_items(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_Shelves_pageInfo(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Shelves", field.Name)
 }
 
 func (ec *executionContext) childFields___Directive(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -496,7 +660,35 @@ func (ec *executionContext) field_Mutation_createLibrary_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createShelf_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (v1.CreateShelfRequest, error) {
+			return ec.unmarshalNCreateShelfRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐCreateShelfRequest(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_deleteLibrary_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (uint, error) {
+			return ec.unmarshalNID2uint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteShelf_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
@@ -524,6 +716,28 @@ func (ec *executionContext) field_Mutation_updateLibrary_args(ctx context.Contex
 	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
 		func(ctx context.Context, v any) (v1.UpdateLibraryRequest, error) {
 			return ec.unmarshalNUpdateLibraryRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐUpdateLibraryRequest(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateShelf_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (uint, error) {
+			return ec.unmarshalNID2uint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (v1.UpdateShelfRequest, error) {
+			return ec.unmarshalNUpdateShelfRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐUpdateShelfRequest(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -571,6 +785,34 @@ func (ec *executionContext) field_Query_library_args(ctx context.Context, rawArg
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_shelf_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (uint, error) {
+			return ec.unmarshalNID2uint(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_shelves_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "pageParams",
+		func(ctx context.Context, v any) (*model.PageParams, error) {
+			return ec.unmarshalOPageParams2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐPageParams(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["pageParams"] = arg0
 	return args, nil
 }
 
@@ -945,6 +1187,138 @@ func (ec *executionContext) fieldContext_Mutation_deleteLibrary(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createShelf(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_createShelf(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CreateShelf(ctx, fc.Args["input"].(v1.CreateShelfRequest))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *v1.Shelf) graphql.Marshaler {
+			return ec.marshalNShelf2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐShelf(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_createShelf(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Shelf(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createShelf_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateShelf(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_updateShelf(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UpdateShelf(ctx, fc.Args["id"].(uint), fc.Args["input"].(v1.UpdateShelfRequest))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *v1.Shelf) graphql.Marshaler {
+			return ec.marshalNShelf2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐShelf(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_updateShelf(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Shelf(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateShelf_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteShelf(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_deleteShelf(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().DeleteShelf(ctx, fc.Args["id"].(uint))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_deleteShelf(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteShelf_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PageInfo_total(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1102,6 +1476,94 @@ func (ec *executionContext) fieldContext_Query_libraries(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_shelf(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_shelf(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Shelf(ctx, fc.Args["id"].(uint))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *v1.Shelf) graphql.Marshaler {
+			return ec.marshalOShelf2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐShelf(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Query_shelf(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Shelf(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_shelf_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_shelves(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_shelves(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Shelves(ctx, fc.Args["pageParams"].(*model.PageParams))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Shelves) graphql.Marshaler {
+			return ec.marshalNShelves2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐShelves(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_shelves(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Shelves(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_shelves_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1173,6 +1635,217 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields___Schema(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Shelf_id(ctx context.Context, field graphql.CollectedField, obj *v1.Shelf) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Shelf_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v uint) graphql.Marshaler {
+			return ec.marshalNID2uint(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Shelf_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Shelf", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Shelf_createdAt(ctx context.Context, field graphql.CollectedField, obj *v1.Shelf) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Shelf_createdAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Shelf_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Shelf", field, false, false, errors.New("field of type Time does not have child fields"))
+}
+
+func (ec *executionContext) _Shelf_updatedAt(ctx context.Context, field graphql.CollectedField, obj *v1.Shelf) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Shelf_updatedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.UpdatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Shelf_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Shelf", field, false, false, errors.New("field of type Time does not have child fields"))
+}
+
+func (ec *executionContext) _Shelf_name(ctx context.Context, field graphql.CollectedField, obj *v1.Shelf) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Shelf_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Shelf_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Shelf", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Shelf_description(ctx context.Context, field graphql.CollectedField, obj *v1.Shelf) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Shelf_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalOString2string(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Shelf_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Shelf", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Shelf_library(ctx context.Context, field graphql.CollectedField, obj *v1.Shelf) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Shelf_library(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Shelf().Library(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *v1.Library) graphql.Marshaler {
+			return ec.marshalNLibrary2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐLibrary(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Shelf_library(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Shelf",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Library(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Shelves_items(ctx context.Context, field graphql.CollectedField, obj *model.Shelves) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Shelves_items(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Items, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*v1.Shelf) graphql.Marshaler {
+			return ec.marshalNShelf2ᚕᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐShelfᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Shelves_items(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Shelves",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Shelf(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Shelves_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.Shelves) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Shelves_pageInfo(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PageInfo, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+			return ec.marshalNPageInfo2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐPageInfo(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Shelves_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Shelves",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PageInfo(ctx, field)
 		},
 	}
 	return fc, nil
@@ -2274,6 +2947,50 @@ func (ec *executionContext) unmarshalInputCreateLibraryRequest(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateShelfRequest(ctx context.Context, obj any) (v1.CreateShelfRequest, error) {
+	var it v1.CreateShelfRequest
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "description", "libraryID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "libraryID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("libraryID"))
+			data, err := ec.unmarshalNID2uint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LibraryID = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPageParams(ctx context.Context, obj any) (model.PageParams, error) {
 	var it model.PageParams
 	if obj == nil {
@@ -2343,6 +3060,50 @@ func (ec *executionContext) unmarshalInputUpdateLibraryRequest(ctx context.Conte
 				return it, err
 			}
 			it.Address = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateShelfRequest(ctx context.Context, obj any) (v1.UpdateShelfRequest, error) {
+	var it v1.UpdateShelfRequest
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "description", "libraryID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "libraryID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("libraryID"))
+			data, err := ec.unmarshalOID2ᚖuint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LibraryID = data
 		}
 	}
 	return it, nil
@@ -2498,6 +3259,27 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "createShelf":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createShelf(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateShelf":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateShelf(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteShelf":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteShelf(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2631,6 +3413,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "shelf":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_shelf(ctx, field)
+				if res == graphql.RequiredNull {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "shelves":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_shelves(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -2644,6 +3470,145 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			})
 			if out.Values[i] == graphql.RequiredNull {
 				atomic.AddUint32(&out.Invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var shelfImplementors = []string{"Shelf"}
+
+func (ec *executionContext) _Shelf(ctx context.Context, sel ast.SelectionSet, obj *v1.Shelf) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, shelfImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Shelf")
+		case "id":
+			out.Values[i] = ec._Shelf_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createdAt":
+			out.Values[i] = ec._Shelf_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updatedAt":
+			out.Values[i] = ec._Shelf_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._Shelf_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "description":
+			out.Values[i] = ec._Shelf_description(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "library":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Shelf_library(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var shelvesImplementors = []string{"Shelves"}
+
+func (ec *executionContext) _Shelves(ctx context.Context, sel ast.SelectionSet, obj *model.Shelves) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, shelvesImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Shelves")
+		case "items":
+			out.Values[i] = ec._Shelves_items(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._Shelves_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -3079,6 +4044,11 @@ func (ec *executionContext) unmarshalNCreateLibraryRequest2githubᚗcomᚋredish
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateShelfRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐCreateShelfRequest(ctx context.Context, v any) (v1.CreateShelfRequest, error) {
+	res, err := ec.unmarshalInputCreateShelfRequest(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNID2uint(ctx context.Context, v any) (uint, error) {
 	res, err := graphql.UnmarshalUint(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3165,6 +4135,50 @@ func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋredish101ᚋdepos
 	return ec._PageInfo(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNShelf2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐShelf(ctx context.Context, sel ast.SelectionSet, v v1.Shelf) graphql.Marshaler {
+	return ec._Shelf(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNShelf2ᚕᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐShelfᚄ(ctx context.Context, sel ast.SelectionSet, v []*v1.Shelf) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNShelf2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐShelf(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNShelf2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐShelf(ctx context.Context, sel ast.SelectionSet, v *v1.Shelf) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Shelf(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNShelves2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐShelves(ctx context.Context, sel ast.SelectionSet, v model.Shelves) graphql.Marshaler {
+	return ec._Shelves(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNShelves2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋgraphᚋmodelᚐShelves(ctx context.Context, sel ast.SelectionSet, v *model.Shelves) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Shelves(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3199,6 +4213,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 
 func (ec *executionContext) unmarshalNUpdateLibraryRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐUpdateLibraryRequest(ctx context.Context, v any) (v1.UpdateLibraryRequest, error) {
 	res, err := ec.unmarshalInputUpdateLibraryRequest(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateShelfRequest2githubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐUpdateShelfRequest(ctx context.Context, v any) (v1.UpdateShelfRequest, error) {
+	res, err := ec.unmarshalInputUpdateShelfRequest(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -3372,6 +4391,24 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalOID2ᚖuint(ctx context.Context, v any) (*uint, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalUint(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖuint(ctx context.Context, sel ast.SelectionSet, v *uint) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalUint(*v)
+	return res
+}
+
 func (ec *executionContext) marshalOLibrary2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐLibrary(ctx context.Context, sel ast.SelectionSet, v *v1.Library) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -3385,6 +4422,25 @@ func (ec *executionContext) unmarshalOPageParams2ᚖgithubᚗcomᚋredish101ᚋd
 	}
 	res, err := ec.unmarshalInputPageParams(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOShelf2ᚖgithubᚗcomᚋredish101ᚋdepositumᚋpkgᚋapiᚋv1ᚐShelf(ctx context.Context, sel ast.SelectionSet, v *v1.Shelf) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Shelf(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v any) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalString(v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {

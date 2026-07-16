@@ -14,7 +14,7 @@ var ErrShelfNotFound = errors.New("shelf not found")
 var ErrInvalidLibraryID = errors.New("invalid library ID")
 
 type ShelfService interface {
-	List(ctx context.Context, pageParams *v1.PaginationParams) (*v1.PaginationResponse[v1.Shelf], error)
+	List(ctx context.Context, pageParams *v1.PaginationParams) (*v1.PaginationResponse[*v1.Shelf], error)
 	Get(ctx context.Context, id uint) (*v1.Shelf, error)
 	Create(ctx context.Context, request *v1.CreateShelfRequest) (*v1.Shelf, error)
 	Update(ctx context.Context, id uint, request *v1.UpdateShelfRequest) (*v1.Shelf, error)
@@ -30,15 +30,15 @@ func NewShelfService(db *gorm.DB, libraryService LibraryService) ShelfService {
 	return &shelfService{db: db, libraryService: libraryService}
 }
 
-func (s *shelfService) List(ctx context.Context, pageParams *v1.PaginationParams) (*v1.PaginationResponse[v1.Shelf], error) {
+func (s *shelfService) List(ctx context.Context, pageParams *v1.PaginationParams) (*v1.PaginationResponse[*v1.Shelf], error) {
 	shelves, err := db.Paginate[model.Shelf](ctx, s.db, pageParams)
 	if err != nil {
-		return &v1.PaginationResponse[v1.Shelf]{}, err
+		return &v1.PaginationResponse[*v1.Shelf]{}, err
 	}
 
-	resp := make([]v1.Shelf, len(shelves.Items))
+	resp := make([]*v1.Shelf, len(shelves.Items))
 	for i, shelf := range shelves.Items {
-		resp[i] = v1.Shelf{
+		resp[i] = &v1.Shelf{
 			ID:          shelf.ID,
 			CreatedAt:   shelf.CreatedAt,
 			UpdatedAt:   shelf.UpdatedAt,
@@ -48,7 +48,7 @@ func (s *shelfService) List(ctx context.Context, pageParams *v1.PaginationParams
 		}
 	}
 
-	return &v1.PaginationResponse[v1.Shelf]{
+	return &v1.PaginationResponse[*v1.Shelf]{
 		Page:       shelves.Page,
 		PageSize:   shelves.PageSize,
 		Total:      shelves.Total,

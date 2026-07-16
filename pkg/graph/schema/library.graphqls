@@ -24,12 +24,12 @@ input UpdateLibraryRequest {
     address: String
 }
 
-type Query {
+extend type Query {
     library(id: ID!): Library
     libraries(pageParams: PageParams): Libraries!
 }
 
-type Mutation {
+extend type Mutation {
     createLibrary(input: CreateLibraryRequest!): Library!
 
     updateLibrary(

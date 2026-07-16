@@ -27,3 +27,8 @@ type PageParams struct {
 
 type Query struct {
 }
+
+type Shelves struct {
+	Items    []*v1.Shelf `json:"items"`
+	PageInfo *PageInfo   `json:"pageInfo"`
+}
