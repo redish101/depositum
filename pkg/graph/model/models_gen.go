@@ -26,9 +26,10 @@ type Objects struct {
 }
 
 type PageInfo struct {
-	Total   int32 `json:"total"`
-	HasNext bool  `json:"HasNext"`
-	HasPrev bool  `json:"HasPrev"`
+	Total      int32 `json:"total"`
+	HasNext    bool  `json:"hasNext"`
+	HasPrev    bool  `json:"hasPrev"`
+	TotalPages int32 `json:"totalPages"`
 }
 
 type PageParams struct {

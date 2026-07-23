@@ -27,9 +27,10 @@ func NewResolver(libraryService service.LibraryService, shelfService service.She
 
 func pageInfo[T any](serviceResponse *v1.PaginationResponse[T]) *model.PageInfo {
 	return &model.PageInfo{
-		Total:   int32(serviceResponse.Total),
-		HasNext: serviceResponse.HasNext,
-		HasPrev: serviceResponse.HasPrev,
+		Total:      int32(serviceResponse.Total),
+		HasNext:    serviceResponse.HasNext,
+		HasPrev:    serviceResponse.HasPrev,
+		TotalPages: int32(serviceResponse.TotalPages),
 	}
 }
 

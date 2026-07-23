@@ -92,9 +92,10 @@ type ComplexityRoot struct {
 	}
 
 	PageInfo struct {
-		HasNext func(childComplexity int) int
-		HasPrev func(childComplexity int) int
-		Total   func(childComplexity int) int
+		HasNext    func(childComplexity int) int
+		HasPrev    func(childComplexity int) int
+		Total      func(childComplexity int) int
+		TotalPages func(childComplexity int) int
 	}
 
 	Query struct {
@@ -414,13 +415,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Objects.PageInfo(childComplexity), true
 
-	case "PageInfo.HasNext":
+	case "PageInfo.hasNext":
 		if e.ComplexityRoot.PageInfo.HasNext == nil {
 			break
 		}
 
 		return e.ComplexityRoot.PageInfo.HasNext(childComplexity), true
-	case "PageInfo.HasPrev":
+	case "PageInfo.hasPrev":
 		if e.ComplexityRoot.PageInfo.HasPrev == nil {
 			break
 		}
@@ -432,6 +433,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.PageInfo.Total(childComplexity), true
+	case "PageInfo.totalPages":
+		if e.ComplexityRoot.PageInfo.TotalPages == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PageInfo.TotalPages(childComplexity), true
 
 	case "Query.libraries":
 		if e.ComplexityRoot.Query.Libraries == nil {
@@ -738,10 +745,12 @@ func (ec *executionContext) childFields_PageInfo(ctx context.Context, field grap
 	switch field.Name {
 	case "total":
 		return ec.fieldContext_PageInfo_total(ctx, field)
-	case "HasNext":
-		return ec.fieldContext_PageInfo_HasNext(ctx, field)
-	case "HasPrev":
-		return ec.fieldContext_PageInfo_HasPrev(ctx, field)
+	case "hasNext":
+		return ec.fieldContext_PageInfo_hasNext(ctx, field)
+	case "hasPrev":
+		return ec.fieldContext_PageInfo_hasPrev(ctx, field)
+	case "totalPages":
+		return ec.fieldContext_PageInfo_totalPages(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
 }
@@ -2215,13 +2224,13 @@ func (ec *executionContext) fieldContext_PageInfo_total(_ context.Context, field
 	return graphql.NewScalarFieldContext("PageInfo", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
-func (ec *executionContext) _PageInfo_HasNext(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+func (ec *executionContext) _PageInfo_hasNext(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_PageInfo_HasNext(ctx, field)
+			return ec.fieldContext_PageInfo_hasNext(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
 			return obj.HasNext, nil
@@ -2234,17 +2243,17 @@ func (ec *executionContext) _PageInfo_HasNext(ctx context.Context, field graphql
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_PageInfo_HasNext(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PageInfo_hasNext(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("PageInfo", field, false, false, errors.New("field of type Boolean does not have child fields"))
 }
 
-func (ec *executionContext) _PageInfo_HasPrev(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+func (ec *executionContext) _PageInfo_hasPrev(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_PageInfo_HasPrev(ctx, field)
+			return ec.fieldContext_PageInfo_hasPrev(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
 			return obj.HasPrev, nil
@@ -2257,8 +2266,31 @@ func (ec *executionContext) _PageInfo_HasPrev(ctx context.Context, field graphql
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_PageInfo_HasPrev(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PageInfo_hasPrev(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("PageInfo", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _PageInfo_totalPages(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PageInfo_totalPages(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.TotalPages, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PageInfo_totalPages(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PageInfo", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _Query_library(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -4738,13 +4770,18 @@ func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "HasNext":
-			out.Values[i] = ec._PageInfo_HasNext(ctx, field, obj)
+		case "hasNext":
+			out.Values[i] = ec._PageInfo_hasNext(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "HasPrev":
-			out.Values[i] = ec._PageInfo_HasPrev(ctx, field, obj)
+		case "hasPrev":
+			out.Values[i] = ec._PageInfo_hasPrev(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalPages":
+			out.Values[i] = ec._PageInfo_totalPages(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

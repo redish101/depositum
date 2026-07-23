@@ -1,7 +1,8 @@
 type PageInfo {
     total: Int!
-    HasNext: Boolean!
-    HasPrev: Boolean!
+    hasNext: Boolean!
+    hasPrev: Boolean!
+    totalPages: Int!
 }
 
 input PageParams {
