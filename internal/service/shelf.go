@@ -160,6 +160,11 @@ func (s *shelfService) Update(ctx context.Context, id uint, request *v1.UpdateSh
 		return nil, err
 	}
 
+	library, err := s.libraryService.Get(ctx, shelf.LibraryID)
+	if err != nil {
+		return nil, err
+	}
+
 	resp := &v1.Shelf{
 		ID:          shelf.ID,
 		CreatedAt:   shelf.CreatedAt,
@@ -167,8 +172,8 @@ func (s *shelfService) Update(ctx context.Context, id uint, request *v1.UpdateSh
 		Name:        shelf.Name,
 		Description: shelf.Description,
 		Library: v1.LibrarySummary{
-			ID:   shelf.Library.ID,
-			Name: shelf.Library.Name,
+			ID:   library.ID,
+			Name: library.Name,
 		},
 	}
 
