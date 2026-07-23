@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/labstack/echo/v5"
 	"github.com/redish101/depositum/internal/handler"
+	"github.com/redish101/depositum/internal/ui"
 	"github.com/redish101/depositum/internal/validate"
 )
 
@@ -17,6 +18,13 @@ func NewEcho() (*echo.Echo, error) {
 
 	errorHandler := handler.NewErrorHandler()
 	errorHandler.Register(e)
+
+	uifs, err := ui.FS()
+	if err != nil {
+		return nil, err
+	}
+
+	e.StaticFS("/", uifs)
 
 	e.Static("/docs", "docs")
 
