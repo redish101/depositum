@@ -54,7 +54,7 @@ type CreateObjectRequest struct {
 	Name          string            `json:"name" validate:"required"`
 	Description   string            `json:"description" validate:"omitempty"`
 	DesiredStatus ObjectStatusInput `json:"desiredStatus" validate:"omitempty"`
-	SyncNow       bool              `json:"syncnow" validate:"required"`
+	SyncNow       *bool             `json:"syncnow" validate:"required"`
 }
 
 type UpdateObjectRequest struct {

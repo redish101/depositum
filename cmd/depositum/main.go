@@ -7,6 +7,12 @@ import (
 	"github.com/redish101/depositum/internal/config"
 )
 
+//	@Title			depositum API
+//	@Version		1.0
+//	@Description	档案管理系统 API
+//	@BasePath		/api/v1
+//
+// the main function
 func main() {
 	cfg := config.FromEnv()
 

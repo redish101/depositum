@@ -244,7 +244,7 @@ func (s *objectService) Create(ctx context.Context, request *v1.CreateObjectRequ
 		},
 	}
 
-	if request.SyncNow {
+	if *request.SyncNow {
 		obj.CurrentStatus = model.ObjectStatus(request.DesiredStatus)
 	}
 

@@ -5,7 +5,8 @@
         "type": "go",
         "request": "launch",
         "mode": "auto",
-        "program": "${workspaceFolder}/cmd/depositum"
+        "program": "${workspaceFolder}/cmd/depositum",
+        "cwd": "${workspaceFolder}"
     }
     ]
 }

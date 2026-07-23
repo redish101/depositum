@@ -8,18 +8,28 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v5 v5.2.1
 	github.com/stretchr/testify v1.11.1
+	github.com/swaggo/http-swagger/v2 v2.0.2
+	github.com/swaggo/swag v1.16.6
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.1
 )
 
 require (
 	github.com/99designs/gqlgen v0.17.94 // indirect
+	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
+	github.com/go-openapi/jsonpointer v0.19.6 // indirect
+	github.com/go-openapi/jsonreference v0.20.2 // indirect
+	github.com/go-openapi/spec v0.20.9 // indirect
+	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/josharian/intern v1.0.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/sosodev/duration v1.4.0 // indirect
+	github.com/swaggo/files/v2 v2.0.0 // indirect
 	github.com/urfave/cli/v3 v3.10.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.36 // indirect
 	golang.org/x/mod v0.38.0 // indirect

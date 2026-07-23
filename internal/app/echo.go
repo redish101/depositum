@@ -18,5 +18,7 @@ func NewEcho() (*echo.Echo, error) {
 	errorHandler := handler.NewErrorHandler()
 	errorHandler.Register(e)
 
+	e.Static("/docs", "docs")
+
 	return e, nil
 }

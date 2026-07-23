@@ -1,0 +1,1115 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "档案管理系统 API",
+        "title": "depositum API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/api/v1",
+    "paths": {
+        "/libraries": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Library"
+                ],
+                "summary": "获取库列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Library"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Library"
+                ],
+                "summary": "创建库",
+                "parameters": [
+                    {
+                        "description": "库",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.CreateLibraryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Library"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/libraries/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Library"
+                ],
+                "summary": "获取库详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "库 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Library"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Library"
+                ],
+                "summary": "删除库",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "库 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Library"
+                ],
+                "summary": "更新库",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "库 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "库",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.UpdateLibraryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Library"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/objects": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Object"
+                ],
+                "summary": "获取对象列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "description": "查询条件",
+                        "name": "query",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ListObjectRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Object"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Object"
+                ],
+                "summary": "创建对象",
+                "parameters": [
+                    {
+                        "description": "对象",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.CreateObjectRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Object"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/objects/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Object"
+                ],
+                "summary": "获取对象详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "对象 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Object"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Object"
+                ],
+                "summary": "删除对象",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "对象 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Object"
+                ],
+                "summary": "更新对象",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "对象 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "对象",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.UpdateObjectRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Object"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/objects/{id}/sync": {
+            "patch": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Object"
+                ],
+                "summary": "同步对象状态",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "对象 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Object"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/shelves": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf"
+                ],
+                "summary": "获取架列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Shelf"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf"
+                ],
+                "summary": "创建架",
+                "parameters": [
+                    {
+                        "description": "架",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.CreateShelfRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Shelf"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/shelves/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf"
+                ],
+                "summary": "获取架详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "架 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Shelf"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf"
+                ],
+                "summary": "删除架",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "架 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf"
+                ],
+                "summary": "更新架",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "架 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "架",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.UpdateShelfRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Shelf"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_redish101_depositum_pkg_api_v1.CreateLibraryRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "name"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.CreateObjectRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "syncnow"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "desiredStatus": {
+                    "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectStatusInput"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "syncnow": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.CreateShelfRequest": {
+            "type": "object",
+            "required": [
+                "description",
+                "libraryID",
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "libraryID": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.Library": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.LibrarySummary": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.ListObjectRequest": {
+            "type": "object",
+            "properties": {
+                "libraryID": {
+                    "type": "integer"
+                },
+                "shelfID": {
+                    "type": "integer"
+                },
+                "syncedOnly": {
+                    "type": "boolean"
+                },
+                "unsyncedOnly": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.Object": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "currentStatus": {
+                    "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectStatus"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "desiredStatus": {
+                    "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectStatus"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "synced": {
+                    "type": "boolean"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.ObjectPhase": {
+            "type": "string",
+            "enum": [
+                "CREATED",
+                "ARCHIVED",
+                "WITHDRAWN",
+                "DELETED",
+                "LOST"
+            ],
+            "x-enum-varnames": [
+                "ObjectPhaseCreated",
+                "ObjectPhaseArchived",
+                "ObjectPhaseWithdrawn",
+                "ObjectPhaseDeleted",
+                "ObjectPhaseLost"
+            ]
+        },
+        "github_com_redish101_depositum_pkg_api_v1.ObjectStatus": {
+            "type": "object",
+            "properties": {
+                "library": {
+                    "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.LibrarySummary"
+                },
+                "phase": {
+                    "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectPhase"
+                },
+                "shelf": {
+                    "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ShelfSummary"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.ObjectStatusInput": {
+            "type": "object",
+            "properties": {
+                "libraryID": {
+                    "type": "integer"
+                },
+                "phase": {
+                    "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectPhase"
+                },
+                "shelfID": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Library": {
+            "type": "object",
+            "properties": {
+                "hasNext": {
+                    "description": "是否有下一页",
+                    "type": "boolean"
+                },
+                "hasPrev": {
+                    "description": "是否有上一页",
+                    "type": "boolean"
+                },
+                "items": {
+                    "description": "数据列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Library"
+                    }
+                },
+                "page": {
+                    "description": "当前页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页大小",
+                    "type": "integer"
+                },
+                "total": {
+                    "description": "总记录数",
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "description": "总页数",
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Object": {
+            "type": "object",
+            "properties": {
+                "hasNext": {
+                    "description": "是否有下一页",
+                    "type": "boolean"
+                },
+                "hasPrev": {
+                    "description": "是否有上一页",
+                    "type": "boolean"
+                },
+                "items": {
+                    "description": "数据列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Object"
+                    }
+                },
+                "page": {
+                    "description": "当前页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页大小",
+                    "type": "integer"
+                },
+                "total": {
+                    "description": "总记录数",
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "description": "总页数",
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Shelf": {
+            "type": "object",
+            "properties": {
+                "hasNext": {
+                    "description": "是否有下一页",
+                    "type": "boolean"
+                },
+                "hasPrev": {
+                    "description": "是否有上一页",
+                    "type": "boolean"
+                },
+                "items": {
+                    "description": "数据列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.Shelf"
+                    }
+                },
+                "page": {
+                    "description": "当前页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页大小",
+                    "type": "integer"
+                },
+                "total": {
+                    "description": "总记录数",
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "description": "总页数",
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.Shelf": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "library": {
+                    "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.LibrarySummary"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.ShelfSummary": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.UpdateLibraryRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.UpdateObjectRequest": {
+            "type": "object",
+            "properties": {
+                "currentStatus": {
+                    "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectStatusInput"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "desiredStatus": {
+                    "$ref": "#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectStatusInput"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "syncnow": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_redish101_depositum_pkg_api_v1.UpdateShelfRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "libraryID": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

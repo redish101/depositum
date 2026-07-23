@@ -13,6 +13,7 @@ import (
 type ShelfHandler interface {
 	Register(group *echo.Group)
 	List(c *echo.Context) error
+	Create(c *echo.Context) error
 	Get(c *echo.Context) error
 	Update(c *echo.Context) error
 	Delete(c *echo.Context) error
@@ -38,6 +39,17 @@ func (h *shelfHandler) Register(group *echo.Group) {
 	g.DELETE("/:id", h.Delete)
 }
 
+// Create 创建架
+//
+//	@Summary	创建架
+//	@Tags		Shelf
+//	@Accept		json
+//	@Produce	json
+//	@Param		body	body		v1.CreateShelfRequest	true	"架"
+//	@Success	200		{object}	v1.Shelf
+//	@Failure	400		{object}	v1.ErrorResponse
+//	@Failure	500		{object}	v1.ErrorResponse
+//	@Router		/shelves [post]
 func (h *shelfHandler) Create(c *echo.Context) error {
 	var params v1.CreateShelfRequest
 	if err := c.Bind(&params); err != nil {
@@ -58,6 +70,16 @@ func (h *shelfHandler) Create(c *echo.Context) error {
 	return common.WriteEntity(c, shelf)
 }
 
+// List 获取架列表
+//
+//	@Summary	获取架列表
+//	@Tags		Shelf
+//	@Produce	json
+//	@Param		page		query		int	false	"页码"
+//	@Param		pageSize	query		int	false	"每页数量"
+//	@Success	200			{object}	v1.PaginationResponse[v1.Shelf]
+//	@Failure	500			{object}	v1.ErrorResponse
+//	@Router		/shelves [get]
 func (h *shelfHandler) List(c *echo.Context) error {
 	paginationParams := common.ReadPaginationParams(c)
 	shelves, err := h.svc.List(c.Request().Context(), paginationParams)
@@ -67,6 +89,17 @@ func (h *shelfHandler) List(c *echo.Context) error {
 	return common.WriteEntity(c, shelves)
 }
 
+// Get 获取架详情
+//
+//	@Summary	获取架详情
+//	@Tags		Shelf
+//	@Produce	json
+//	@Param		id	path		int	true	"架 ID"
+//	@Success	200	{object}	v1.Shelf
+//	@Failure	400	{object}	v1.ErrorResponse
+//	@Failure	404	{object}	v1.ErrorResponse
+//	@Failure	500	{object}	v1.ErrorResponse
+//	@Router		/shelves/{id} [get]
 func (h *shelfHandler) Get(c *echo.Context) error {
 	id, err := common.ReadID(c.Param("id"))
 	if err != nil {
@@ -82,6 +115,19 @@ func (h *shelfHandler) Get(c *echo.Context) error {
 	return common.WriteEntity(c, shelf)
 }
 
+// Update 更新架
+//
+//	@Summary	更新架
+//	@Tags		Shelf
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		int						true	"架 ID"
+//	@Param		body	body		v1.UpdateShelfRequest	true	"架"
+//	@Success	200		{object}	v1.Shelf
+//	@Failure	400		{object}	v1.ErrorResponse
+//	@Failure	404		{object}	v1.ErrorResponse
+//	@Failure	500		{object}	v1.ErrorResponse
+//	@Router		/shelves/{id} [patch]
 func (h *shelfHandler) Update(c *echo.Context) error {
 	id, err := common.ReadID(c.Param("id"))
 	if err != nil {
@@ -109,6 +155,17 @@ func (h *shelfHandler) Update(c *echo.Context) error {
 	return common.WriteEntity(c, shelf)
 }
 
+// Delete 删除架
+//
+//	@Summary	删除架
+//	@Tags		Shelf
+//	@Produce	json
+//	@Param		id	path	int	true	"架 ID"
+//	@Success	200
+//	@Failure	400	{object}	v1.ErrorResponse
+//	@Failure	404	{object}	v1.ErrorResponse
+//	@Failure	500	{object}	v1.ErrorResponse
+//	@Router		/shelves/{id} [delete]
 func (h *shelfHandler) Delete(c *echo.Context) error {
 	id, err := common.ReadID(c.Param("id"))
 	if err != nil {

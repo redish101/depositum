@@ -38,6 +38,17 @@ func (l *libraryHandler) Register(group *echo.Group) {
 	g.DELETE("/:id", l.Delete)
 }
 
+// Create 创建库
+//
+//	@Summary	创建库
+//	@Tags		Library
+//	@Accept		json
+//	@Produce	json
+//	@Param		body	body		v1.CreateLibraryRequest	true	"库"
+//	@Success	200		{object}	v1.Library
+//	@Failure	400		{object}	v1.ErrorResponse
+//	@Failure	500		{object}	v1.ErrorResponse
+//	@Router		/libraries [post]
 func (l *libraryHandler) Create(c *echo.Context) error {
 	var params v1.CreateLibraryRequest
 	if err := c.Bind(&params); err != nil {
@@ -55,6 +66,16 @@ func (l *libraryHandler) Create(c *echo.Context) error {
 	return common.WriteEntity(c, library)
 }
 
+// List 获取库列表
+//
+//	@Summary	获取库列表
+//	@Tags		Library
+//	@Produce	json
+//	@Param		page		query		int	false	"页码"
+//	@Param		pageSize	query		int	false	"每页数量"
+//	@Success	200			{object}	v1.PaginationResponse[v1.Library]
+//	@Failure	500			{object}	v1.ErrorResponse
+//	@Router		/libraries [get]
 func (l *libraryHandler) List(c *echo.Context) error {
 	paginationParams := common.ReadPaginationParams(c)
 	libraries, err := l.libraryService.List(c.Request().Context(), paginationParams)
@@ -64,6 +85,17 @@ func (l *libraryHandler) List(c *echo.Context) error {
 	return common.WriteEntity(c, libraries)
 }
 
+// Get 获取库详情
+//
+//	@Summary	获取库详情
+//	@Tags		Library
+//	@Produce	json
+//	@Param		id	path		int	true	"库 ID"
+//	@Success	200	{object}	v1.Library
+//	@Failure	400	{object}	v1.ErrorResponse
+//	@Failure	404	{object}	v1.ErrorResponse
+//	@Failure	500	{object}	v1.ErrorResponse
+//	@Router		/libraries/{id} [get]
 func (l *libraryHandler) Get(c *echo.Context) error {
 	idStr := c.Param("id")
 	id, err := common.ReadID(idStr)
@@ -81,6 +113,19 @@ func (l *libraryHandler) Get(c *echo.Context) error {
 	return common.WriteEntity(c, library)
 }
 
+// Update 更新库
+//
+//	@Summary	更新库
+//	@Tags		Library
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		int						true	"库 ID"
+//	@Param		body	body		v1.UpdateLibraryRequest	true	"库"
+//	@Success	200		{object}	v1.Library
+//	@Failure	400		{object}	v1.ErrorResponse
+//	@Failure	404		{object}	v1.ErrorResponse
+//	@Failure	500		{object}	v1.ErrorResponse
+//	@Router		/libraries/{id} [patch]
 func (l *libraryHandler) Update(c *echo.Context) error {
 	idStr := c.Param("id")
 	id, err := common.ReadID(idStr)
@@ -107,6 +152,16 @@ func (l *libraryHandler) Update(c *echo.Context) error {
 	return common.WriteEntity(c, updatedLibrary)
 }
 
+// Delete 删除库
+//
+//	@Summary	删除库
+//	@Tags		Library
+//	@Produce	json
+//	@Param		id	path	int	true	"库 ID"
+//	@Success	204
+//	@Failure	400	{object}	v1.ErrorResponse
+//	@Failure	500	{object}	v1.ErrorResponse
+//	@Router		/libraries/{id} [delete]
 func (l *libraryHandler) Delete(c *echo.Context) error {
 	idStr := c.Param("id")
 	id, err := common.ReadID(idStr)

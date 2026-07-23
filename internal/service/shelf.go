@@ -105,7 +105,12 @@ func (s *shelfService) Create(ctx context.Context, request *v1.CreateShelfReques
 		LibraryID:   request.LibraryID,
 	}
 
-	err = s.db.WithContext(ctx).Preload("Library").Create(&shelf).Error
+	err = s.db.WithContext(ctx).Create(&shelf).Error
+	if err != nil {
+		return nil, err
+	}
+
+	library, err := s.libraryService.Get(ctx, shelf.LibraryID)
 	if err != nil {
 		return nil, err
 	}
@@ -117,8 +122,8 @@ func (s *shelfService) Create(ctx context.Context, request *v1.CreateShelfReques
 		Name:        shelf.Name,
 		Description: shelf.Description,
 		Library: v1.LibrarySummary{
-			ID:   shelf.Library.ID,
-			Name: shelf.Library.Name,
+			ID:   library.ID,
+			Name: library.Name,
 		},
 	}
 

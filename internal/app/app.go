@@ -10,6 +10,8 @@ import (
 	"github.com/redish101/depositum/internal/config"
 	"github.com/redish101/depositum/internal/db"
 	"gorm.io/gorm"
+
+	_ "github.com/redish101/depositum/docs"
 )
 
 type App interface {

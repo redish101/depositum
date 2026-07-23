@@ -1,0 +1,738 @@
+basePath: /api/v1
+definitions:
+  github_com_redish101_depositum_pkg_api_v1.CreateLibraryRequest:
+    properties:
+      address:
+        type: string
+      name:
+        type: string
+    required:
+    - address
+    - name
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.CreateObjectRequest:
+    properties:
+      description:
+        type: string
+      desiredStatus:
+        $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectStatusInput'
+      name:
+        type: string
+      syncnow:
+        type: boolean
+    required:
+    - name
+    - syncnow
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.CreateShelfRequest:
+    properties:
+      description:
+        type: string
+      libraryID:
+        type: integer
+      name:
+        type: string
+    required:
+    - description
+    - libraryID
+    - name
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.Library:
+    properties:
+      address:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.LibrarySummary:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.ListObjectRequest:
+    properties:
+      libraryID:
+        type: integer
+      shelfID:
+        type: integer
+      syncedOnly:
+        type: boolean
+      unsyncedOnly:
+        type: boolean
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.Object:
+    properties:
+      createdAt:
+        type: string
+      currentStatus:
+        $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectStatus'
+      description:
+        type: string
+      desiredStatus:
+        $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectStatus'
+      id:
+        type: integer
+      name:
+        type: string
+      synced:
+        type: boolean
+      updatedAt:
+        type: string
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.ObjectPhase:
+    enum:
+    - CREATED
+    - ARCHIVED
+    - WITHDRAWN
+    - DELETED
+    - LOST
+    type: string
+    x-enum-varnames:
+    - ObjectPhaseCreated
+    - ObjectPhaseArchived
+    - ObjectPhaseWithdrawn
+    - ObjectPhaseDeleted
+    - ObjectPhaseLost
+  github_com_redish101_depositum_pkg_api_v1.ObjectStatus:
+    properties:
+      library:
+        $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.LibrarySummary'
+      phase:
+        $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectPhase'
+      shelf:
+        $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ShelfSummary'
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.ObjectStatusInput:
+    properties:
+      libraryID:
+        type: integer
+      phase:
+        $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectPhase'
+      shelfID:
+        type: integer
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Library:
+    properties:
+      hasNext:
+        description: 是否有下一页
+        type: boolean
+      hasPrev:
+        description: 是否有上一页
+        type: boolean
+      items:
+        description: 数据列表
+        items:
+          $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Library'
+        type: array
+      page:
+        description: 当前页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      total:
+        description: 总记录数
+        type: integer
+      totalPages:
+        description: 总页数
+        type: integer
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Object:
+    properties:
+      hasNext:
+        description: 是否有下一页
+        type: boolean
+      hasPrev:
+        description: 是否有上一页
+        type: boolean
+      items:
+        description: 数据列表
+        items:
+          $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Object'
+        type: array
+      page:
+        description: 当前页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      total:
+        description: 总记录数
+        type: integer
+      totalPages:
+        description: 总页数
+        type: integer
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Shelf:
+    properties:
+      hasNext:
+        description: 是否有下一页
+        type: boolean
+      hasPrev:
+        description: 是否有上一页
+        type: boolean
+      items:
+        description: 数据列表
+        items:
+          $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Shelf'
+        type: array
+      page:
+        description: 当前页码
+        type: integer
+      pageSize:
+        description: 每页大小
+        type: integer
+      total:
+        description: 总记录数
+        type: integer
+      totalPages:
+        description: 总页数
+        type: integer
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.Shelf:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      library:
+        $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.LibrarySummary'
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.ShelfSummary:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.UpdateLibraryRequest:
+    properties:
+      address:
+        type: string
+      name:
+        type: string
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.UpdateObjectRequest:
+    properties:
+      currentStatus:
+        $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectStatusInput'
+      description:
+        type: string
+      desiredStatus:
+        $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ObjectStatusInput'
+      name:
+        type: string
+      syncnow:
+        type: boolean
+    type: object
+  github_com_redish101_depositum_pkg_api_v1.UpdateShelfRequest:
+    properties:
+      description:
+        type: string
+      libraryID:
+        type: integer
+      name:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: 档案管理系统 API
+  title: depositum API
+  version: "1.0"
+paths:
+  /libraries:
+    get:
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Library'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 获取库列表
+      tags:
+      - Library
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 库
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.CreateLibraryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Library'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 创建库
+      tags:
+      - Library
+  /libraries/{id}:
+    delete:
+      parameters:
+      - description: 库 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 删除库
+      tags:
+      - Library
+    get:
+      parameters:
+      - description: 库 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Library'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 获取库详情
+      tags:
+      - Library
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: 库 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 库
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.UpdateLibraryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Library'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 更新库
+      tags:
+      - Library
+  /objects:
+    get:
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: pageSize
+        type: integer
+      - description: 查询条件
+        in: body
+        name: query
+        schema:
+          $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ListObjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Object'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 获取对象列表
+      tags:
+      - Object
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 对象
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.CreateObjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Object'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 创建对象
+      tags:
+      - Object
+  /objects/{id}:
+    delete:
+      parameters:
+      - description: 对象 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 删除对象
+      tags:
+      - Object
+    get:
+      parameters:
+      - description: 对象 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Object'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 获取对象详情
+      tags:
+      - Object
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: 对象 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 对象
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.UpdateObjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Object'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 更新对象
+      tags:
+      - Object
+  /objects/{id}/sync:
+    patch:
+      parameters:
+      - description: 对象 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Object'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 同步对象状态
+      tags:
+      - Object
+  /shelves:
+    get:
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.PaginationResponse-github_com_redish101_depositum_pkg_api_v1_Shelf'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 获取架列表
+      tags:
+      - Shelf
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 架
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.CreateShelfRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Shelf'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 创建架
+      tags:
+      - Shelf
+  /shelves/{id}:
+    delete:
+      parameters:
+      - description: 架 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 删除架
+      tags:
+      - Shelf
+    get:
+      parameters:
+      - description: 架 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Shelf'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 获取架详情
+      tags:
+      - Shelf
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: 架 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 架
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.UpdateShelfRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.Shelf'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_redish101_depositum_pkg_api_v1.ErrorResponse'
+      summary: 更新架
+      tags:
+      - Shelf
+swagger: "2.0"

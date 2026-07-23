@@ -6,6 +6,10 @@ all: server
 server:
 	go build -v -o bin/depositum $(SERVER)
 
+apidoc:
+	swag init -g cmd/depositum/main.go -d . --parseInternal --parseDependency
+	swag fmt
+
 clean:
 	rm -r bin
 
