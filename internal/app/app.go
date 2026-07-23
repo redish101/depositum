@@ -56,11 +56,6 @@ func New(config *config.Config) (App, error) {
 	app.initServices()
 	app.initHandlers(v1Group)
 
-	graphQL := NewGraphQLServer(app.services)
-
-	e.POST("/graphql", echo.WrapHandler(graphQL.Handlers()))
-	e.GET("/graphql", echo.WrapHandler(graphQL.Playground()))
-
 	app.server = &http.Server{
 		Handler: app.echo,
 	}

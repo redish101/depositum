@@ -13,6 +13,11 @@ type Library struct {
 	Address string `json:"address"`
 }
 
+type LibrarySummary struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+}
+
 type CreateLibraryRequest struct {
 	Name    string `json:"name" validate:"required"`
 	Address string `json:"address" validate:"required"`

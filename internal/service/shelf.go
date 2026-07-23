@@ -31,7 +31,7 @@ func NewShelfService(db *gorm.DB, libraryService LibraryService) ShelfService {
 }
 
 func (s *shelfService) List(ctx context.Context, pageParams *v1.PaginationParams) (*v1.PaginationResponse[*v1.Shelf], error) {
-	shelves, err := db.Paginate[model.Shelf](ctx, s.db, pageParams)
+	shelves, err := db.Paginate[model.Shelf](ctx, s.db.Preload("Library"), pageParams)
 	if err != nil {
 		return &v1.PaginationResponse[*v1.Shelf]{}, err
 	}
@@ -44,7 +44,10 @@ func (s *shelfService) List(ctx context.Context, pageParams *v1.PaginationParams
 			UpdatedAt:   shelf.UpdatedAt,
 			Name:        shelf.Name,
 			Description: shelf.Description,
-			LibraryID:   shelf.LibraryID,
+			Library: v1.LibrarySummary{
+				ID:   shelf.LibraryID,
+				Name: shelf.Library.Name,
+			},
 		}
 	}
 
@@ -60,7 +63,7 @@ func (s *shelfService) List(ctx context.Context, pageParams *v1.PaginationParams
 func (s *shelfService) Get(ctx context.Context, id uint) (*v1.Shelf, error) {
 	var shelf model.Shelf
 
-	err := s.db.WithContext(ctx).First(&shelf, id).Error
+	err := s.db.WithContext(ctx).Preload("Library").First(&shelf, id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrShelfNotFound
 	}
@@ -71,7 +74,10 @@ func (s *shelfService) Get(ctx context.Context, id uint) (*v1.Shelf, error) {
 		UpdatedAt:   shelf.UpdatedAt,
 		Name:        shelf.Name,
 		Description: shelf.Description,
-		LibraryID:   shelf.LibraryID,
+		Library: v1.LibrarySummary{
+			Name: shelf.Library.Name,
+			ID:   shelf.Library.ID,
+		},
 	}
 
 	return resp, nil
@@ -99,7 +105,7 @@ func (s *shelfService) Create(ctx context.Context, request *v1.CreateShelfReques
 		LibraryID:   request.LibraryID,
 	}
 
-	err = s.db.WithContext(ctx).Create(&shelf).Error
+	err = s.db.WithContext(ctx).Preload("Library").Create(&shelf).Error
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +116,10 @@ func (s *shelfService) Create(ctx context.Context, request *v1.CreateShelfReques
 		UpdatedAt:   shelf.UpdatedAt,
 		Name:        shelf.Name,
 		Description: shelf.Description,
-		LibraryID:   shelf.LibraryID,
+		Library: v1.LibrarySummary{
+			ID:   shelf.Library.ID,
+			Name: shelf.Library.Name,
+		},
 	}
 
 	return resp, nil
@@ -141,7 +150,7 @@ func (s *shelfService) Update(ctx context.Context, id uint, request *v1.UpdateSh
 		shelf.LibraryID = *request.LibraryID
 	}
 
-	err = s.db.WithContext(ctx).Save(&shelf).Error
+	err = s.db.WithContext(ctx).Preload("Library").Save(&shelf).Error
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +161,10 @@ func (s *shelfService) Update(ctx context.Context, id uint, request *v1.UpdateSh
 		UpdatedAt:   shelf.UpdatedAt,
 		Name:        shelf.Name,
 		Description: shelf.Description,
-		LibraryID:   shelf.LibraryID,
+		Library: v1.LibrarySummary{
+			ID:   shelf.Library.ID,
+			Name: shelf.Library.Name,
+		},
 	}
 
 	return resp, nil

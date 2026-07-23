@@ -37,6 +37,66 @@ func NewObjectService(db *gorm.DB, libraryService LibraryService, shelfService S
 	return &objectService{db: db, libraryService: libraryService, shelfService: shelfService}
 }
 
+func (s *objectService) getStatus(ctx context.Context, obj model.Object) (desired *v1.ObjectStatus, current *v1.ObjectStatus, err error) {
+	desiredLibrary, err := s.libraryService.Get(ctx, obj.DesiredStatus.LibraryID)
+	if err != nil && !errors.Is(err, ErrLibraryNotFound) {
+		return nil, nil, err
+	}
+
+	currentLibrary, err := s.libraryService.Get(ctx, obj.CurrentStatus.LibraryID)
+	if err != nil && !errors.Is(err, ErrLibraryNotFound) {
+		return nil, nil, err
+	}
+
+	desiredShelf, err := s.shelfService.Get(ctx, obj.DesiredStatus.ShelfID)
+	if err != nil && !errors.Is(err, ErrShelfNotFound) {
+		return nil, nil, err
+	}
+
+	currentShelf, err := s.shelfService.Get(ctx, obj.CurrentStatus.ShelfID)
+	if err != nil && !errors.Is(err, ErrShelfNotFound) {
+		return nil, nil, err
+	}
+
+	desired = &v1.ObjectStatus{
+		Phase: obj.DesiredStatus.Phase,
+	}
+
+	if desiredLibrary != nil {
+		desired.Library = v1.LibrarySummary{
+			ID:   desiredLibrary.ID,
+			Name: desiredLibrary.Name,
+		}
+	}
+
+	if desiredShelf != nil {
+		desired.Shelf = v1.ShelfSummary{
+			ID:   desiredShelf.ID,
+			Name: desiredShelf.Name,
+		}
+	}
+
+	current = &v1.ObjectStatus{
+		Phase: obj.CurrentStatus.Phase,
+	}
+
+	if currentLibrary != nil {
+		current.Library = v1.LibrarySummary{
+			ID:   currentLibrary.ID,
+			Name: currentLibrary.Name,
+		}
+	}
+
+	if currentShelf != nil {
+		current.Shelf = v1.ShelfSummary{
+			ID:   currentShelf.ID,
+			Name: currentShelf.Name,
+		}
+	}
+
+	return desired, current, nil
+}
+
 func (s *objectService) List(ctx context.Context, pageParams *v1.PaginationParams, listParams *v1.ListObjectRequest) (*v1.PaginationResponse[*v1.Object], error) {
 	if listParams.SyncedOnly && listParams.UnsyncedOnly {
 		return nil, ErrInvalidListObjectsParams
@@ -70,6 +130,12 @@ func (s *objectService) List(ctx context.Context, pageParams *v1.PaginationParam
 
 	resp := make([]*v1.Object, len(objects.Items))
 	for i, obj := range objects.Items {
+		desired, current, err := s.getStatus(ctx, obj)
+
+		if err != nil {
+			return nil, err
+		}
+
 		resp[i] = &v1.Object{
 			ID:            obj.ID,
 			CreatedAt:     obj.CreatedAt,
@@ -77,8 +143,8 @@ func (s *objectService) List(ctx context.Context, pageParams *v1.PaginationParam
 			Name:          obj.Name,
 			Description:   obj.Description,
 			Synced:        obj.Synced,
-			CurrentStatus: v1.ObjectStatus(obj.CurrentStatus),
-			DesiredStatus: v1.ObjectStatus(obj.DesiredStatus),
+			CurrentStatus: *current,
+			DesiredStatus: *desired,
 		}
 	}
 
@@ -103,6 +169,12 @@ func (s *objectService) Get(ctx context.Context, id uint) (*v1.Object, error) {
 		return nil, err
 	}
 
+	desired, current, err := s.getStatus(ctx, obj)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &v1.Object{
 		ID:            obj.ID,
 		CreatedAt:     obj.CreatedAt,
@@ -110,8 +182,8 @@ func (s *objectService) Get(ctx context.Context, id uint) (*v1.Object, error) {
 		Name:          obj.Name,
 		Description:   obj.Description,
 		Synced:        obj.Synced,
-		CurrentStatus: v1.ObjectStatus(obj.CurrentStatus),
-		DesiredStatus: v1.ObjectStatus(obj.DesiredStatus),
+		CurrentStatus: *current,
+		DesiredStatus: *desired,
 	}, nil
 }
 
@@ -136,7 +208,7 @@ func checkShelfExists(ctx context.Context, shelfService ShelfService, libraryID 
 		return err
 	}
 
-	if shelf.LibraryID != libraryID {
+	if shelf.Library.ID != libraryID {
 		return ErrShelfNotInLibrary
 	}
 
@@ -183,6 +255,11 @@ func (s *objectService) Create(ctx context.Context, request *v1.CreateObjectRequ
 		return nil, err
 	}
 
+	desired, current, err := s.getStatus(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
 	return &v1.Object{
 		ID:            obj.ID,
 		CreatedAt:     obj.CreatedAt,
@@ -190,8 +267,8 @@ func (s *objectService) Create(ctx context.Context, request *v1.CreateObjectRequ
 		Name:          obj.Name,
 		Description:   obj.Description,
 		Synced:        obj.Synced,
-		CurrentStatus: v1.ObjectStatus(obj.CurrentStatus),
-		DesiredStatus: v1.ObjectStatus(obj.DesiredStatus),
+		CurrentStatus: *current,
+		DesiredStatus: *desired,
 	}, nil
 }
 
@@ -238,6 +315,11 @@ func (s *objectService) Update(ctx context.Context, id uint, request *v1.UpdateO
 		return nil, err
 	}
 
+	desired, current, err := s.getStatus(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
 	return &v1.Object{
 		ID:            obj.ID,
 		CreatedAt:     obj.CreatedAt,
@@ -245,8 +327,8 @@ func (s *objectService) Update(ctx context.Context, id uint, request *v1.UpdateO
 		Name:          obj.Name,
 		Description:   obj.Description,
 		Synced:        obj.Synced,
-		CurrentStatus: v1.ObjectStatus(obj.CurrentStatus),
-		DesiredStatus: v1.ObjectStatus(obj.DesiredStatus),
+		CurrentStatus: *current,
+		DesiredStatus: *desired,
 	}, nil
 }
 
@@ -274,6 +356,11 @@ func (s *objectService) Sync(ctx context.Context, id uint) (*v1.Object, error) {
 		return nil, err
 	}
 
+	desired, current, err := s.getStatus(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
 	return &v1.Object{
 		ID:            obj.ID,
 		CreatedAt:     obj.CreatedAt,
@@ -281,8 +368,8 @@ func (s *objectService) Sync(ctx context.Context, id uint) (*v1.Object, error) {
 		Name:          obj.Name,
 		Description:   obj.Description,
 		Synced:        obj.Synced,
-		CurrentStatus: v1.ObjectStatus(obj.CurrentStatus),
-		DesiredStatus: v1.ObjectStatus(obj.DesiredStatus),
+		CurrentStatus: *current,
+		DesiredStatus: *desired,
 	}, nil
 }
 
