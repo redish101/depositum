@@ -1,6 +1,6 @@
 module github.com/redish101/depositum
 
-go 1.26.3
+go 1.26
 
 require (
 	github.com/go-playground/locales v0.14.1
