@@ -8,7 +8,6 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v5 v5.2.1
 	github.com/stretchr/testify v1.11.1
-	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.6
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.1
@@ -29,7 +28,6 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/sosodev/duration v1.4.0 // indirect
-	github.com/swaggo/files/v2 v2.0.0 // indirect
 	github.com/urfave/cli/v3 v3.10.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.36 // indirect
 	golang.org/x/mod v0.38.0 // indirect
